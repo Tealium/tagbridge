@@ -2,7 +2,11 @@ package com.tealium.googledfp;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -20,12 +24,15 @@ import java.lang.ref.WeakReference;
 public class GoogleDFPRemoteCommand extends RemoteCommand {
 
     private static final int RESULT_NO_VIEW = 418;
+
+    private final Context context;
     private WeakReference<Activity> currentActivity;
 
     public GoogleDFPRemoteCommand(Application application) {
         super("google_dfp", "Google DFP");
 
         // TODO: consider unregistration
+        this.context = application.getApplicationContext();
         application.registerActivityLifecycleCallbacks(createActivityLifecycleCallbacks());
     }
 
@@ -48,6 +55,7 @@ public class GoogleDFPRemoteCommand extends RemoteCommand {
         PublisherAdView adView = new PublisherAdView(activity);
         adView.setAdSizes(parseAdSizes(response.getRequestPayload()));
         adView.setAdUnitId(parseAdUnitId(response.getRequestPayload()));
+        adView.setLayoutParams(parseLayoutParams(response.getRequestPayload()));
 
         PublisherAdRequest adRequest = new PublisherAdRequest.Builder().build();
         adView.loadAd(adRequest);
@@ -57,8 +65,64 @@ public class GoogleDFPRemoteCommand extends RemoteCommand {
         response.send();
     }
 
+    private FrameLayout.LayoutParams parseLayoutParams(JSONObject payload) throws JSONException {
+        final int left = payload.optInt("left", Integer.MIN_VALUE);
+        final int top = payload.optInt("top", Integer.MIN_VALUE);
+        final int right = payload.optInt("right", Integer.MIN_VALUE);
+        final int bottom = payload.optInt("bottom", Integer.MIN_VALUE);
+
+        FrameLayout.LayoutParams fllp = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT);
+
+        int gravity = 0;
+
+        if (left >= 0) {
+            fllp.leftMargin = this.dipToPx(left);
+            if (right >= 0) {
+                gravity |= Gravity.CENTER_HORIZONTAL;
+            } else {
+                gravity |= Gravity.START;
+            }
+        }
+
+        if (top >= 0) {
+            fllp.topMargin = this.dipToPx(top);
+            if (bottom >= 0) {
+                gravity |= Gravity.CENTER_VERTICAL;
+            } else {
+                gravity |= Gravity.TOP;
+            }
+        }
+
+        if (right >= 0) {
+            fllp.rightMargin = this.dipToPx(right);
+            if (left < 0) {
+                // Wasn't centered, must be right aligned.
+                gravity |= Gravity.END;
+            }
+        }
+
+        if (bottom >= 0) {
+            fllp.bottomMargin = this.dipToPx(bottom);
+            if (top < 0) {
+                // Wasn't centered, must be bottom aligned.
+                gravity |= Gravity.BOTTOM;
+            }
+        }
+
+        fllp.gravity = gravity;
+
+        return fllp;
+    }
+
     private Activity getCurrentActivity() {
         return this.currentActivity == null ? null : this.currentActivity.get();
+    }
+
+    private int dipToPx(int dipValue) {
+        DisplayMetrics metrics = this.context.getResources().getDisplayMetrics();
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dipValue, metrics);
     }
 
     private static String parseAdUnitId(JSONObject payload) {

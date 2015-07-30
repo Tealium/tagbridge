@@ -32,7 +32,9 @@ window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify(
     }, 
     payload : {
         ad_sizes : [ "BANNER" ], 
-		ad_unit_id : "/6499/example/banner"
+		ad_unit_id : "/6499/example/banner", 
+		bottom : 1, 
+		right : 1
     }
 })), '_self');
 ```
