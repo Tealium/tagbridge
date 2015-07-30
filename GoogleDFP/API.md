@@ -2,6 +2,8 @@
 
 > In progress
 
+## Setup JS
+
 ```javascript
 
 if(!utag.mobile) {
@@ -20,24 +22,24 @@ if(!utag.mobile.remote_api.response.google_dfp) {
 	utag.mobile.remote_api.response.google_dfp = {};
 }
 
-utag.mobile.remote_api.response.google_dfp[0] = function(code, message) {
-	console.log(code);
-	console.log(message)
+// Response methods
+
+utag.mobile.remote_api.response.google_dfp.create_ad = function(status, message) {
+	console.log("create_ad: " + status + "; " + message);
 };
 
+utag.mobile.remote_api.response.google_dfp.get_ad_unit_ids = function(status, message) {
+	console.log("get_ad_unit_ids: " + status + "; " + message);
+};
 
-window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify({
-    config : {
-        response_id : 0
-    }, 
-    payload : {
-        ad_sizes : [ "BANNER" ], 
-		ad_unit_id : "/6499/example/banner", 
-		bottom : 1, 
-		right : 1
-    }
-})), '_self');
+utag.mobile.remote_api.response.google_dfp.remove_ad = function(status, message) {
+	console.log("remove_ad: " + status + "; " + message);
+};
 ```
+
+> All payload parameters must have the **command** key with a corresponding command name (String) value.
+
+## create_ad
 
 * ad_unit_id (String) **Required**
 * ad_sizes (Array[String]) **Required**
@@ -51,3 +53,61 @@ window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify(
 * top (int in dip) *Optional*
 * bottom (int in dip) *Optional*
 * right (int in dip) *Optional*
+
+*Example*
+
+```javascript
+window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify({
+    config : {
+        response_id : "create_ad"
+    }, 
+    payload : {
+		command : "create_ad",
+        ad_sizes : [ "BANNER" ], 
+		ad_unit_id : "/6499/example/banner", 
+		bottom : 1, 
+		left : 1,
+		right : 1
+    }
+})), '_self');
+```
+
+## get_ad_unit_ids
+
+Get a list of visible ad unit ids, a stringified json array of string unit ids is delivered to the callback.
+
+*Example*
+
+```javascript
+window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify({
+    config : {
+        response_id : "get_ad_unit_ids"
+    }, 
+    payload : {
+		command : "get_ad_unit_ids"
+    }
+})), '_self');
+```
+
+## remove_ad
+
+Remove a visible ad from by its unit id.
+
+* ad_unit_id (String) **Required**
+
+*Example*
+
+```javascript
+window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify({
+    config : {
+        response_id : "remove_ad"
+    }, 
+    payload : {
+		command : "remove_ad",
+		ad_unit_id : "/6499/example/banner"
+    }
+})), '_self');
+```
+
+
+

@@ -16,14 +16,19 @@ import com.google.android.gms.ads.doubleclick.PublisherAdView;
 import com.tealium.library.RemoteCommand;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
 
 public class GoogleDFPRemoteCommand extends RemoteCommand {
 
-    private static final int RESULT_NO_VIEW = 418;
+    private static final String COMMAND_CREATE_AD = "create_ad";
+    private static final String COMMAND_GET_AD_UNIT_IDS = "get_ad_unit_ids";
+    private static final String COMMAND_REMOVE_AD = "remove_ad";
+
+    private static final int STATUS_NO_VIEW = 418;
+    private static final int STATUS_INCOMPATIBLE = 419;
+    private static final int STATUS_AD_NOT_FOUND = 420;
 
     private final Context context;
     private WeakReference<Activity> currentActivity;
@@ -39,20 +44,30 @@ public class GoogleDFPRemoteCommand extends RemoteCommand {
     @Override
     protected void onInvoke(Response response) throws Throwable {
 
-        final Activity activity = this.getCurrentActivity();
+        final String command = response.getRequestPayload().optString("command", null);
 
-        if (activity == null) {
-            response.setStatus(RESULT_NO_VIEW).send();
+        if (COMMAND_CREATE_AD.equals(command)) {
+            this.createAd(response);
+        } else if (COMMAND_GET_AD_UNIT_IDS.equals(command)) {
+            this.getAdUnitIds(response);
+        } else if (COMMAND_REMOVE_AD.equals(command)) {
+            this.removeAd(response);
+        } else {
+            response.setStatus(Response.STATUS_BAD_REQUEST);
+            response.setBody(command + " is an unknown command.");
+        }
+
+        response.send();
+    }
+
+    private void createAd(Response response) {
+
+        final FrameLayout contentView = this.getCurrentContentView(response);
+        if (contentView == null) {
             return;
         }
 
-        final View contentView = activity.findViewById(android.R.id.content);
-        if (!(contentView instanceof FrameLayout)) {
-            // TODO: log error
-            return;
-        }
-
-        PublisherAdView adView = new PublisherAdView(activity);
+        PublisherAdView adView = new PublisherAdView(contentView.getContext());
         adView.setAdSizes(parseAdSizes(response.getRequestPayload()));
         adView.setAdUnitId(parseAdUnitId(response.getRequestPayload()));
         adView.setLayoutParams(parseLayoutParams(response.getRequestPayload()));
@@ -60,12 +75,75 @@ public class GoogleDFPRemoteCommand extends RemoteCommand {
         PublisherAdRequest adRequest = new PublisherAdRequest.Builder().build();
         adView.loadAd(adRequest);
 
-        ((FrameLayout) contentView).addView(adView);
-
-        response.send();
+        contentView.addView(adView);
     }
 
-    private FrameLayout.LayoutParams parseLayoutParams(JSONObject payload) throws JSONException {
+    private void getAdUnitIds(Response response) {
+        final FrameLayout contentView = this.getCurrentContentView(response);
+        if (contentView == null) {
+            return;
+        }
+
+        final JSONArray adUnitIds = new JSONArray();
+
+        for (int i = 0; i < contentView.getChildCount(); i++) {
+            View child = contentView.getChildAt(i);
+            if (child instanceof PublisherAdView) {
+                adUnitIds.put(((PublisherAdView) child).getAdUnitId());
+            }
+        }
+
+        response.setBody(adUnitIds.toString());
+    }
+
+    private void removeAd(Response response) {
+        final FrameLayout contentView = this.getCurrentContentView(response);
+        if (contentView == null) {
+            return;
+        }
+
+        final String adUnitId = parseAdUnitId(response.getRequestPayload());
+        PublisherAdView adView = null;
+
+        for (int i = 0; i < contentView.getChildCount(); i++) {
+            View child = contentView.getChildAt(i);
+            if (child instanceof PublisherAdView) {
+                if (adUnitId.equals(((PublisherAdView) child).getAdUnitId())) {
+                    adView = (PublisherAdView) child;
+                    break;
+                }
+            }
+        }
+
+        if (adView == null) {
+            response.setStatus(STATUS_AD_NOT_FOUND);
+            response.setBody("No ad found with unit id " + adUnitId);
+            return;
+        }
+
+        contentView.removeView(adView);
+    }
+
+    private FrameLayout getCurrentContentView(Response response) {
+        final Activity activity = this.getCurrentActivity();
+
+        if (activity == null) {
+            response.setStatus(STATUS_NO_VIEW);
+            response.setBody("There is no visible activity.");
+            return null;
+        }
+
+        final View contentView = activity.findViewById(android.R.id.content);
+        if (!(contentView instanceof FrameLayout)) {
+            response.setStatus(STATUS_INCOMPATIBLE);
+            response.setBody("This view is incompatible for ad display");
+            return null;
+        }
+
+        return (FrameLayout) contentView;
+    }
+
+    private FrameLayout.LayoutParams parseLayoutParams(JSONObject payload) {
         final int left = payload.optInt("left", Integer.MIN_VALUE);
         final int top = payload.optInt("top", Integer.MIN_VALUE);
         final int right = payload.optInt("right", Integer.MIN_VALUE);
@@ -133,7 +211,7 @@ public class GoogleDFPRemoteCommand extends RemoteCommand {
         return adUnitId;
     }
 
-    private static AdSize[] parseAdSizes(JSONObject payload) throws JSONException {
+    private static AdSize[] parseAdSizes(JSONObject payload) {
 
         final JSONArray adSizesArray = payload.optJSONArray("ad_sizes");
         if (adSizesArray == null || adSizesArray.length() == 0) {
@@ -145,7 +223,7 @@ public class GoogleDFPRemoteCommand extends RemoteCommand {
 
         for (int i = 0; i < adSizesArray.length(); i++) {
             // TODO: custom ad size
-            if ("BANNER".equals(adSizeValue = adSizesArray.getString(i))) {
+            if ("BANNER".equals(adSizeValue = adSizesArray.optString(i))) {
                 adSizes[i] = AdSize.BANNER;
             } else if ("LARGE_BANNER".equals(adSizeValue)) {
                 adSizes[i] = AdSize.LARGE_BANNER;
