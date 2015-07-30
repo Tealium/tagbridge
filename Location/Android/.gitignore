@@ -1,0 +1,8 @@
+# Files
+**/.classpath
+**/.project
+
+# Directories
+**/bin/*
+**/gen/*
+**/.settings/*
