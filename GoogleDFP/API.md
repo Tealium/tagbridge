@@ -31,29 +31,21 @@ window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify(
         response_id : 0
     }, 
     payload : {
-        left: 0, 
-		bottom:	0,
-		right: 0,
-		height:	100
-    }
-})), '_self');
-
-window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify({
-    config : {
-        response_id : 0
-    }, 
-    payload : {
-		top: 0,
-		right: 0,
-		height:	100,
-		width: 100
+        ad_sizes : [ "BANNER" ], 
+		ad_unit_id : "/6499/example/banner"
     }
 })), '_self');
 ```
 
-* left
-* top
-* bottom
-* right
-* width 
-* height
+* ad_unit_id (String) **Required**
+* ad_sizes (Array[String]) **Required**
+ * BANNER
+ * LARGE_BANNER
+ * MEDIUM_RECTANGLE
+ * FULL_BANNER
+ * LEADERBOARD
+ * SMART_BANNER
+* left (int in dip) *Optional*
+* top (int in dip) *Optional*
+* bottom (int in dip) *Optional*
+* right (int in dip) *Optional*
