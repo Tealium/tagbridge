@@ -8,6 +8,7 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 
 import com.google.android.gms.ads.AdSize;
@@ -67,10 +68,16 @@ public class GoogleDFPRemoteCommand extends RemoteCommand {
             return;
         }
 
+        final AdConfiguration.Anchor anchor = parseAnchor(response.getRequestPayload());
+
         PublisherAdView adView = new PublisherAdView(contentView.getContext());
         adView.setAdSizes(parseAdSizes(response.getRequestPayload()));
         adView.setAdUnitId(parseAdUnitId(response.getRequestPayload()));
-        adView.setLayoutParams(parseLayoutParams(response.getRequestPayload()));
+        adView.setLayoutParams(createAdViewLayoutParams(anchor));
+
+        AdConfiguration adConfiguration = new AdConfiguration(adView, anchor);
+        adView.setTag(adConfiguration);
+        adView.getViewTreeObserver().addOnGlobalLayoutListener(adConfiguration);
 
         PublisherAdRequest adRequest = new PublisherAdRequest.Builder().build();
         adView.loadAd(adRequest);
@@ -143,57 +150,6 @@ public class GoogleDFPRemoteCommand extends RemoteCommand {
         return (FrameLayout) contentView;
     }
 
-    private FrameLayout.LayoutParams parseLayoutParams(JSONObject payload) {
-        final int left = payload.optInt("left", Integer.MIN_VALUE);
-        final int top = payload.optInt("top", Integer.MIN_VALUE);
-        final int right = payload.optInt("right", Integer.MIN_VALUE);
-        final int bottom = payload.optInt("bottom", Integer.MIN_VALUE);
-
-        FrameLayout.LayoutParams fllp = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT);
-
-        int gravity = 0;
-
-        if (left >= 0) {
-            fllp.leftMargin = this.dipToPx(left);
-            if (right >= 0) {
-                gravity |= Gravity.CENTER_HORIZONTAL;
-            } else {
-                gravity |= Gravity.START;
-            }
-        }
-
-        if (top >= 0) {
-            fllp.topMargin = this.dipToPx(top);
-            if (bottom >= 0) {
-                gravity |= Gravity.CENTER_VERTICAL;
-            } else {
-                gravity |= Gravity.TOP;
-            }
-        }
-
-        if (right >= 0) {
-            fllp.rightMargin = this.dipToPx(right);
-            if (left < 0) {
-                // Wasn't centered, must be right aligned.
-                gravity |= Gravity.END;
-            }
-        }
-
-        if (bottom >= 0) {
-            fllp.bottomMargin = this.dipToPx(bottom);
-            if (top < 0) {
-                // Wasn't centered, must be bottom aligned.
-                gravity |= Gravity.BOTTOM;
-            }
-        }
-
-        fllp.gravity = gravity;
-
-        return fllp;
-    }
-
     private Activity getCurrentActivity() {
         return this.currentActivity == null ? null : this.currentActivity.get();
     }
@@ -201,6 +157,21 @@ public class GoogleDFPRemoteCommand extends RemoteCommand {
     private int dipToPx(int dipValue) {
         DisplayMetrics metrics = this.context.getResources().getDisplayMetrics();
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dipValue, metrics);
+    }
+
+    private static ViewTreeObserver.OnGlobalLayoutListener createGlobalLayoutListener(
+            final PublisherAdView adView) {
+
+        return new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                if (adView.getHeight() <= 0) {
+                    return;
+                }
+
+
+            }
+        };
     }
 
     private static String parseAdUnitId(JSONObject payload) {
@@ -282,4 +253,44 @@ public class GoogleDFPRemoteCommand extends RemoteCommand {
             }
         };
     }
+
+    private static AdConfiguration.Anchor parseAnchor(JSONObject payload) {
+        final String anchor = payload.optString("anchor", null);
+        if (anchor == null) {
+            throw new IllegalArgumentException("key \"anchor\" is missing");
+        }
+
+        if ("top".equals(anchor)) {
+            return AdConfiguration.Anchor.TOP;
+        } else if ("bottom".equals(anchor)) {
+            return AdConfiguration.Anchor.BOTTOM;
+        }
+
+        throw new IllegalArgumentException("Value \"" + anchor + "\" is not valid for key \"anchor\".");
+    }
+
+    private static FrameLayout.LayoutParams createAdViewLayoutParams(AdConfiguration.Anchor anchor) {
+
+        int gravity;
+
+        switch (anchor) {
+            case TOP:
+                gravity = Gravity.CENTER_HORIZONTAL | Gravity.TOP;
+                break;
+            case BOTTOM:
+                gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
+                break;
+            default:
+                throw new IllegalArgumentException(anchor + " is not a supported anchor.");
+        }
+
+        FrameLayout.LayoutParams fllp = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT);
+
+        fllp.gravity = gravity;
+
+        return fllp;
+    }
+
 }

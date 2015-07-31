@@ -43,16 +43,15 @@ utag.mobile.remote_api.response.google_dfp.remove_ad = function(status, message)
 
 * ad_unit_id (String) **Required**
 * ad_sizes (Array[String]) **Required**
- * BANNER
- * LARGE_BANNER
- * MEDIUM_RECTANGLE
- * FULL_BANNER
- * LEADERBOARD
- * SMART_BANNER
-* left (int in dip) *Optional*
-* top (int in dip) *Optional*
-* bottom (int in dip) *Optional*
-* right (int in dip) *Optional*
+ * "BANNER"
+ * "LARGE_BANNER"
+ * "MEDIUM_RECTANGLE"
+ * "FULL_BANNER"
+ * "LEADERBOARD"
+ * "SMART_BANNER"
+* andchor (String) **Required**
+ * "top" 
+ * "bottom"
 
 *Example*
 
@@ -63,11 +62,9 @@ window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify(
     }, 
     payload : {
 		command : "create_ad",
-        ad_sizes : [ "BANNER" ], 
+        ad_sizes : [ "SMART_BANNER" ], 
 		ad_unit_id : "/6499/example/banner", 
-		bottom : 1, 
-		left : 1,
-		right : 1
+		anchor : "bottom"
     }
 })), '_self');
 ```
