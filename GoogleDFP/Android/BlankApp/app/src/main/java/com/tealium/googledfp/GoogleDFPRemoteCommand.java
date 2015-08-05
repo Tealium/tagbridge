@@ -466,7 +466,10 @@ public class GoogleDFPRemoteCommand extends RemoteCommand implements
 
             @Override
             public void onGlobalLayout() {
+                this.resizeSibling();
+            }
 
+            private void resizeSibling() {
                 final int height = adView.getHeight();
                 View contentView;
 

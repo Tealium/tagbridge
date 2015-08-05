@@ -88,7 +88,7 @@ window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify(
     }, 
     payload : {
 		command : "create_banner_ad",
-        banner_ad_sizes : [ "SMART_BANNER" ], 
+        banner_ad_sizes : [ "SMART_BANNER", "BANNER" ], 
 		ad_unit_id : "/6499/example/banner", 
 		banner_anchor : "BOTTOM", 	
 		ad_id : "mainview_bottom_banner_ad", 
