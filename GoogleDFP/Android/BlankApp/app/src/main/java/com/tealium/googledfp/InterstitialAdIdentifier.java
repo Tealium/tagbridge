@@ -12,14 +12,7 @@ final class InterstitialAdIdentifier extends AdIdentifier {
     @Override
     public JSONObject toJSONObject() {
         try {
-            final JSONObject obj = new JSONObject()
-                    .put(GoogleDFPRemoteCommand.KEY_AD_UNIT_ID, this.getAdUnitId());
-
-            if (this.getAdId() != null) {
-                obj.put(GoogleDFPRemoteCommand.KEY_AD_ID, this.getAdId());
-            }
-
-            return obj;
+            return super.toJSONObject().put("type", "INTERSTITIAL");
         } catch (JSONException e) {
             throw new RuntimeException(e); // Should never happen.
         }

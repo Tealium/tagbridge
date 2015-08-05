@@ -1,10 +1,7 @@
 package com.tealium.googledfp;
 
 import android.view.Gravity;
-import android.view.View;
 import android.widget.FrameLayout;
-
-import com.google.android.gms.ads.doubleclick.PublisherAdView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,15 +46,9 @@ final class BannerAdIdentifier extends AdIdentifier {
     @Override
     public JSONObject toJSONObject() {
         try {
-            final JSONObject obj = new JSONObject()
+            return super.toJSONObject()
                     .put(GoogleDFPRemoteCommand.KEY_BANNER_ANCHOR, anchor.toString())
-                    .put(GoogleDFPRemoteCommand.KEY_AD_UNIT_ID, this.getAdUnitId());
-
-            if (this.getAdId() != null) {
-                obj.put(GoogleDFPRemoteCommand.KEY_AD_ID, this.getAdId());
-            }
-
-            return obj;
+                    .put("type", "BANNER");
         } catch (JSONException e) {
             throw new RuntimeException(e); // Should never happen.
         }
@@ -71,4 +62,6 @@ final class BannerAdIdentifier extends AdIdentifier {
 
         return new BannerAdIdentifier(anchor, adUnitId, id);
     }
+
+
 }

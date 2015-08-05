@@ -32,6 +32,10 @@ utag.mobile.remote_api.response.google_dfp.create_interstitial_ad = function(sta
 	console.log("create_interstitial_ad: " + status + "; " + message);
 };
 
+utag.mobile.remote_api.response.google_dfp.show_interstitial_ad = function(status, message) {
+	console.log("show_interstitial_ad: " + status + "; " + message);
+};
+
 utag.mobile.remote_api.response.google_dfp.get_ads = function(status, message) {
 	console.log("get_ads: " + status + "; " + message);
 };
@@ -110,6 +114,8 @@ window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify(
 
 ## create_interstitial_ad
 
+Interstitial ads are not shown right away and need time to load. The status can be queried by ```get_ads```. Once loaded, call ```show_interstitial_ad``` to show this ad.
+
 * ad_unit_id (String) **Required**
 * id (String) *Optional*
  * Any string
@@ -129,6 +135,7 @@ window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify(
 * tag_for_child_directed_treatment (boolean) *Optional* 
 * manual_impressions (boolean) *Optional* 
 * publisher_provided_id (String) *Optional* 
+* test_devices (Array) *Optional*
 
 *Example*
 
@@ -139,6 +146,7 @@ window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify(
     }, 
     payload : {
 		command : "create_interstitial_ad",
+		ad_id : "mainview_interstitial_ad",
 		ad_unit_id : "/6499/example/interstitial", 
 		custom_targeting : {
 			target0 : "people", 
@@ -155,10 +163,33 @@ window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify(
 		birthday : 599817600000,
 		tag_for_child_directed_treatment : false,
 		manual_impressions : false,
-		publisher_provided_id : "publisher_provided_id"	
+		publisher_provided_id : "publisher_provided_id", 
+		test_devices : [ "" ]
     }
 })), '_self');
 ```
+
+## show_interstitial_ad
+
+Show an existing interstitial ad already created by ```create_interstitial_ad```.
+
+* command (String) **Required**
+* ad_unit_id (String) **Required**
+* ad_id (String) *Optional*
+
+*Example*
+
+window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify({
+    config : {
+        response_id : "show_interstitial_ad"
+    }, 
+    payload : {
+		command : "show_interstitial_ad",
+		ad_unit_id : "/6499/example/interstitial", 
+		ad_id : "mainview_interstitial_ad"
+    }
+})), '_self');
+
 
 ## get_ads
 
