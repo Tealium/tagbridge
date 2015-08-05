@@ -3,6 +3,7 @@ package com.tealium.googledfp;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -13,6 +14,7 @@ import android.widget.FrameLayout;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.doubleclick.PublisherAdRequest;
 import com.google.android.gms.ads.doubleclick.PublisherAdView;
+import com.google.android.gms.ads.doubleclick.PublisherInterstitialAd;
 import com.tealium.library.RemoteCommand;
 
 import org.json.JSONArray;
@@ -20,6 +22,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -30,8 +36,19 @@ public class GoogleDFPRemoteCommand extends RemoteCommand {
     static final String KEY_BANNER_ANCHOR = "banner_anchor";
     static final String KEY_AD_ID = "ad_id";
     static final String KEY_BANNER_AD_SIZES = "banner_ad_sizes";
+    static final String KEY_CUSTOM_TARGETING = "custom_targeting";
+    static final String KEY_KEYWORDS = "keywords";
+    static final String KEY_CATEGORY_EXCLUSIONS = "category_exclusions";
+    static final String KEY_REQUEST_AGENT = "request_agent";
+    static final String KEY_LOCATION = "location";
+    static final String KEY_GENDER = "gender";
+    static final String KEY_BIRTHDAY = "birthday";
+    static final String KEY_TAG_FOR_CHILD_DIRECTED_TREATMENT = "tag_for_child_directed_treatment";
+    static final String KEY_MANUAL_IMPRESSIONS = "manual_impressions";
+    static final String KEY_PUBLISHER_PROVIDED_ID = "publisher_provided_id";
 
     private static final String COMMAND_CREATE_BANNER_AD = "create_banner_ad";
+    private static final String COMMAND_CREATE_INTERSTITIAL_AD = "create_interstitial_ad";
     private static final String COMMAND_GET_ADS = "get_ads";
     private static final String COMMAND_REMOVE_AD = "remove_ad";
 
@@ -43,7 +60,7 @@ public class GoogleDFPRemoteCommand extends RemoteCommand {
 
     private final Context context;
     private WeakReference<Activity> currentActivity;
-    private final Map<View, AdIdentifier> ads;
+    private final Map<Object, AdIdentifier> ads;
 
     public GoogleDFPRemoteCommand(Application application) {
         super("google_dfp", "Google DFP");
@@ -61,6 +78,8 @@ public class GoogleDFPRemoteCommand extends RemoteCommand {
 
         if (COMMAND_CREATE_BANNER_AD.equals(command)) {
             this.createBannerAd(response);
+        } else if (COMMAND_CREATE_INTERSTITIAL_AD.equals(command)) {
+            this.createInterstitialAd(response);
         } else if (COMMAND_GET_ADS.equals(command)) {
             this.getAds(response);
         } else if (COMMAND_REMOVE_AD.equals(command)) {
@@ -83,12 +102,11 @@ public class GoogleDFPRemoteCommand extends RemoteCommand {
         final PublisherAdView adView = new PublisherAdView(contentView.getContext());
         final BannerAdIdentifier adIdentifier = BannerAdIdentifier.parseBannerAdIdentifier(
                 response.getRequestPayload());
-        final PublisherAdRequest adRequest = new PublisherAdRequest.Builder().build();
+        final PublisherAdRequest adRequest = parsePublisherAdRequest(response.getRequestPayload());
 
         adView.setAdSizes(parseBannerAdSizes(response.getRequestPayload()));
         adView.setAdUnitId(adIdentifier.getAdUnitId());
         adView.setLayoutParams(adIdentifier.getAnchor().createFrameLayoutLayoutParams());
-        adView.setTag(adIdentifier);
         adView.getViewTreeObserver().addOnGlobalLayoutListener(createBannerGlobalLayoutListener(
                 adView, adIdentifier));
         adView.loadAd(adRequest);
@@ -97,6 +115,25 @@ public class GoogleDFPRemoteCommand extends RemoteCommand {
         this.ads.put(adView, adIdentifier);
     }
 
+    private void createInterstitialAd(Response response) throws JSONException {
+
+        final FrameLayout contentView = this.getCurrentContentView(response);
+        if (contentView == null) {
+            return;
+        }
+
+        final InterstitialAdIdentifier adIdentifier = InterstitialAdIdentifier.parseInterstitialAdIdentifier(
+                response.getRequestPayload());
+        final PublisherInterstitialAd ad = new PublisherInterstitialAd(contentView.getContext());
+        final PublisherAdRequest adRequest = parsePublisherAdRequest(response.getRequestPayload());
+
+        ad.setAdUnitId(adIdentifier.getAdUnitId());
+        ad.loadAd(adRequest);
+
+        this.ads.put(ad, adIdentifier);
+    }
+
+    // TODO: is_visible
     private void getAds(Response response) {
 
         final JSONArray ads = new JSONArray();
@@ -113,9 +150,9 @@ public class GoogleDFPRemoteCommand extends RemoteCommand {
 
         final String adId = response.getRequestPayload().optString(KEY_AD_ID, null);
         final String adUnitId = response.getRequestPayload().optString(KEY_AD_UNIT_ID, null);
-        final View viewToRemove = this.getAd(adId, adUnitId);
+        final Object adToRemove = this.getAd(adId, adUnitId);
 
-        if (viewToRemove == null) {
+        if (adToRemove == null) {
             response.setStatus(STATUS_AD_NOT_FOUND);
             response.setBody(String.format(
                     Locale.ROOT,
@@ -125,20 +162,25 @@ public class GoogleDFPRemoteCommand extends RemoteCommand {
             return;
         }
 
-        this.ads.remove(viewToRemove);
+        this.ads.remove(adToRemove);
 
-        final FrameLayout contentViewFrame = (FrameLayout) viewToRemove.getParent();
-        if (contentViewFrame == null) {
-            response.setStatus(STATUS_ALREADY_REMOVED);
-            response.setBody(String.format(
-                    Locale.ROOT,
-                    "Ad { ad_id=%s, ad_unit_id=%s } already orphaned.",
-                    adId,
-                    adUnitId));
-            return;
+        if (adToRemove instanceof View) {
+
+            final FrameLayout contentViewFrame = (FrameLayout) ((View) adToRemove).getParent();
+            if (contentViewFrame == null) {
+                response.setStatus(STATUS_ALREADY_REMOVED);
+                response.setBody(String.format(
+                        Locale.ROOT,
+                        "Ad { ad_id=%s, ad_unit_id=%s } already orphaned.",
+                        adId,
+                        adUnitId));
+                return;
+            }
+
+            contentViewFrame.removeView((View) adToRemove);
         }
 
-        contentViewFrame.removeView(viewToRemove);
+        // TODO: remove interstitial ad
     }
 
     private FrameLayout getCurrentContentView(Response response) {
@@ -209,10 +251,10 @@ public class GoogleDFPRemoteCommand extends RemoteCommand {
         };
     }
 
-    private View getAd(String adId, String adUnitId) {
+    private Object getAd(String adId, String adUnitId) {
 
         // find ad
-        for (Map.Entry<View, AdIdentifier> entry : this.ads.entrySet()) {
+        for (Map.Entry<Object, AdIdentifier> entry : this.ads.entrySet()) {
             final boolean adIdMatches = adId != null && adId.equals(entry.getValue().getAdId());
             final boolean adUnitIdMatches = adUnitId != null && adUnitId.equals(entry.getValue().getAdUnitId());
 
@@ -254,6 +296,107 @@ public class GoogleDFPRemoteCommand extends RemoteCommand {
         }
 
         return adSizes;
+    }
+
+    private static PublisherAdRequest parsePublisherAdRequest(JSONObject payload) throws JSONException {
+        final PublisherAdRequest.Builder builder = new PublisherAdRequest.Builder();
+
+        extractCustomTargeting(builder, payload);
+        extractKeywords(builder, payload);
+        extractCategoryExclusions(builder, payload);
+        extractLocation(builder, payload);
+        extractGender(builder, payload);
+
+        final String requestAgent = payload.optString(KEY_REQUEST_AGENT, null);
+        if (requestAgent != null) {
+            builder.setRequestAgent(requestAgent);
+        }
+
+        final long birthday = payload.optLong(KEY_BIRTHDAY, Long.MIN_VALUE);
+        if (birthday != Long.MIN_VALUE) {
+            builder.setBirthday(new Date(birthday));
+        }
+
+        final String publisherProvidedId = payload.optString(KEY_PUBLISHER_PROVIDED_ID, null);
+        if (publisherProvidedId != null) {
+            builder.setPublisherProvidedId(publisherProvidedId);
+        }
+
+        if (payload.has(KEY_TAG_FOR_CHILD_DIRECTED_TREATMENT)) {
+            builder.tagForChildDirectedTreatment(payload.getBoolean(KEY_TAG_FOR_CHILD_DIRECTED_TREATMENT));
+        }
+
+        if (payload.has(KEY_MANUAL_IMPRESSIONS)) {
+            builder.setManualImpressionsEnabled(payload.getBoolean(KEY_MANUAL_IMPRESSIONS));
+        }
+
+        return builder.build();
+    }
+
+    private static void extractCustomTargeting(final PublisherAdRequest.Builder builder, JSONObject payload) throws JSONException {
+        final JSONObject customTargeting = payload.optJSONObject(KEY_CUSTOM_TARGETING);
+        if (customTargeting == null) {
+            return;
+        }
+        Iterator<String> keys = customTargeting.keys();
+        while (keys.hasNext()) {
+            final String key = keys.next();
+            final Object value = payload.get(key);
+            if (value instanceof JSONArray) {
+                final JSONArray array = (JSONArray) value;
+                List<String> values = new ArrayList<>(array.length());
+                for (int i = 0; i < array.length(); i++) {
+                    values.add(array.getString(i));
+                }
+                builder.addCustomTargeting(key, values);
+            } else {
+                builder.addCustomTargeting(key, value.toString());
+            }
+        }
+    }
+
+    private static void extractKeywords(final PublisherAdRequest.Builder builder, JSONObject payload) throws JSONException {
+        final JSONArray keywords = payload.optJSONArray(KEY_KEYWORDS);
+        if (keywords == null) {
+            return;
+        }
+        for (int i = 0; i < keywords.length(); i++) {
+            builder.addKeyword(keywords.getString(i));
+        }
+    }
+
+    private static void extractCategoryExclusions(final PublisherAdRequest.Builder builder, JSONObject payload) throws JSONException {
+        final JSONArray exclusions = payload.optJSONArray(KEY_CATEGORY_EXCLUSIONS);
+        if (exclusions == null) {
+            return;
+        }
+        for (int i = 0; i < exclusions.length(); i++) {
+            builder.addCategoryExclusion(exclusions.getString(i));
+        }
+    }
+
+    private static void extractLocation(final PublisherAdRequest.Builder builder, JSONObject payload) throws JSONException {
+        final JSONObject locationInfo = payload.optJSONObject(KEY_LOCATION);
+        if (locationInfo == null) {
+            return;
+        }
+
+        final Location location = new Location("");
+        location.setAccuracy(100);
+        location.setLatitude(locationInfo.getDouble("latitude"));
+        location.setLongitude(locationInfo.getDouble("longitude"));
+        builder.setLocation(location);
+    }
+
+    private static void extractGender(final PublisherAdRequest.Builder builder, JSONObject payload) {
+        final String gender = payload.optString(KEY_GENDER, null);
+        if ("MALE".equals(gender)) {
+            builder.setGender(com.google.android.gms.ads.AdRequest.GENDER_MALE);
+        } else if ("FEMALE".equals(gender)) {
+            builder.setGender(com.google.android.gms.ads.AdRequest.GENDER_FEMALE);
+        } else if ("UNKNOWN".equals(gender)) {
+            builder.setGender(com.google.android.gms.ads.AdRequest.GENDER_UNKNOWN);
+        }
     }
 
     private static ViewTreeObserver.OnGlobalLayoutListener createBannerGlobalLayoutListener(

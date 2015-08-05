@@ -28,8 +28,12 @@ utag.mobile.remote_api.response.google_dfp.create_banner_ad = function(status, m
 	console.log("create_banner_ad: " + status + "; " + message);
 };
 
+utag.mobile.remote_api.response.google_dfp.create_interstitial_ad = function(status, message) {
+	console.log("create_interstitial_ad: " + status + "; " + message);
+};
+
 utag.mobile.remote_api.response.google_dfp.get_ads = function(status, message) {
-	console.log("get_ad_unit_ids: " + status + "; " + message);
+	console.log("get_ads: " + status + "; " + message);
 };
 
 utag.mobile.remote_api.response.google_dfp.remove_ad = function(status, message) {
@@ -54,6 +58,22 @@ utag.mobile.remote_api.response.google_dfp.remove_ad = function(status, message)
  * "BOTTOM"
 * ad_id (String) *Optional*
  * Any string
+* custom_targeting (Object) *Optional*
+ * key-value (String, Array)
+* keywords (Array) *Optional* 
+* category_exclusions (Array) *Optional* 
+* request_agent (String) *Optional* 
+* location (Object) *Optional* 
+ * latitude (double)
+ * longitude (double)
+* gender (String) *Optional* 
+ * "MALE"
+ * "FEMALE"
+ * "UNKNOWN"
+* birthday (long) *Optional* 
+* tag_for_child_directed_treatment (boolean) *Optional* 
+* manual_impressions (boolean) *Optional* 
+* publisher_provided_id (String) *Optional* 
 
 *Example*
 
@@ -67,7 +87,23 @@ window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify(
         banner_ad_sizes : [ "SMART_BANNER" ], 
 		ad_unit_id : "/6499/example/banner", 
 		banner_anchor : "BOTTOM", 	
-		ad_id : "mainview_bottom_banner_ad"
+		ad_id : "mainview_bottom_banner_ad", 
+		custom_targeting : {
+			target0 : "people", 
+			target1 : [ "groups", "of", "people" ]
+		},
+		keywords : [ "alpha", "beta" ],
+		category_exclusions : [ "colors", "numbers" ],
+		request_agent : "request_agent",
+		location : {
+			"latitude" : 32.906231,
+			"longitude" : -117.237921
+		},
+		gender : "FEMALE",
+		birthday : 599817600000,
+		tag_for_child_directed_treatment : false,
+		manual_impressions : false,
+		publisher_provided_id : "publisher_provided_id"
     }
 })), '_self');
 ```
@@ -75,31 +111,51 @@ window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify(
 ## create_interstitial_ad
 
 * ad_unit_id (String) **Required**
-* ad_sizes (Array[String]) **Required**
- * "BANNER"
- * "LARGE_BANNER"
- * "MEDIUM_RECTANGLE"
- * "FULL_BANNER"
- * "LEADERBOARD"
- * "SMART_BANNER"
-* andchor (String) **Required**
- * "top" 
- * "bottom"
 * id (String) *Optional*
  * Any string
+* custom_targeting (Object) *Optional*
+ * key-value (String, Array)
+* keywords (Array) *Optional* 
+* category_exclusions (Array) *Optional* 
+* request_agent (String) *Optional* 
+* location (Object) *Optional* 
+ * latitude (double)
+ * longitude (double)
+* gender (String) *Optional* 
+ * "MALE"
+ * "FEMALE"
+ * "UNKNOWN"
+* birthday (long) *Optional* 
+* tag_for_child_directed_treatment (boolean) *Optional* 
+* manual_impressions (boolean) *Optional* 
+* publisher_provided_id (String) *Optional* 
 
 *Example*
 
 ```javascript
 window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify({
     config : {
-        response_id : "create_ad"
+        response_id : "create_interstitial_ad"
     }, 
     payload : {
-		command : "create_ad",
-        ad_sizes : [ "SMART_BANNER" ], 
-		ad_unit_id : "/6499/example/banner", 
-		anchor : "bottom", 	
+		command : "create_interstitial_ad",
+		ad_unit_id : "/6499/example/interstitial", 
+		custom_targeting : {
+			target0 : "people", 
+			target1 : [ "groups", "of", "people" ]
+		},
+		keywords : [ "alpha", "beta" ],
+		category_exclusions : [ "colors", "numbers" ],
+		request_agent : "request_agent",
+		location : {
+			"latitude" : 32.906231,
+			"longitude" : -117.237921
+		},
+		gender : "FEMALE",
+		birthday : 599817600000,
+		tag_for_child_directed_treatment : false,
+		manual_impressions : false,
+		publisher_provided_id : "publisher_provided_id"	
     }
 })), '_self');
 ```
