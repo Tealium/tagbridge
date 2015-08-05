@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 
+import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.doubleclick.PublisherAdRequest;
 import com.google.android.gms.ads.doubleclick.PublisherAdView;
@@ -27,7 +28,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-public class GoogleDFPRemoteCommand extends RemoteCommand implements ActivityLifecycleCallbacks.VisiblityListener {
+public class GoogleDFPRemoteCommand extends RemoteCommand implements
+        ActivityLifecycleCallbacks.VisiblityListener, InterstitialAdIdentifier.CloseListener {
 
     static final String KEY_AD_UNIT_ID = "ad_unit_id";
     static final String KEY_BANNER_ANCHOR = "banner_anchor";
@@ -103,6 +105,16 @@ public class GoogleDFPRemoteCommand extends RemoteCommand implements ActivityLif
         this.currentActivity = null;
     }
 
+    @Override
+    public void onInterstitialAdClose(InterstitialAdIdentifier identifier) {
+        final PublisherInterstitialAd ad = this.getInterstitialAd(identifier.getAdId(), identifier.getAdUnitId());
+        if (ad == null) {
+            return;
+        }
+        identifier.setCloseListener(null);
+        this.interstitialAds.remove(ad);
+    }
+
     private void createBannerAd(Response response) throws JSONException {
 
         final FrameLayout contentView = this.getCurrentContentView(response);
@@ -138,6 +150,7 @@ public class GoogleDFPRemoteCommand extends RemoteCommand implements ActivityLif
 
         final InterstitialAdIdentifier adIdentifier = InterstitialAdIdentifier.parseInterstitialAdIdentifier(
                 response.getRequestPayload());
+        adIdentifier.setCloseListener(this);
         final PublisherInterstitialAd ad = new PublisherInterstitialAd(activity);
         final PublisherAdRequest adRequest = parsePublisherAdRequest(response.getRequestPayload());
 
@@ -176,13 +189,18 @@ public class GoogleDFPRemoteCommand extends RemoteCommand implements ActivityLif
                 adUnitId));
     }
 
-    // TODO: is_visible
-    private void getAds(Response response) {
+    private void getAds(Response response) throws JSONException {
 
         final JSONArray ads = new JSONArray();
+        final Activity visibleActivity = this.getCurrentActivity();
 
-        for (AdIdentifier adIdentifier : this.bannerAds.values()) {
-            ads.put(adIdentifier.toJSONObject());
+        for (Map.Entry<PublisherAdView, BannerAdIdentifier> entry : this.bannerAds.entrySet()) {
+
+            final boolean hasParent = entry.getKey().getParent() != null;
+            final boolean belongsToCurrentActivity = entry.getKey().getContext().equals(visibleActivity);
+
+            ads.put(entry.getValue().toJSONObject()
+                    .put("is_visible", hasParent && belongsToCurrentActivity));
         }
 
         for (AdIdentifier adIdentifier : this.interstitialAds.values()) {
@@ -192,7 +210,6 @@ public class GoogleDFPRemoteCommand extends RemoteCommand implements ActivityLif
         response.setBody(ads.toString());
     }
 
-    // TODO: fix affected margins
     private void removeAd(Response response) throws JSONException {
 
         final String adId = response.getRequestPayload().optString(KEY_AD_ID, null);
@@ -215,6 +232,13 @@ public class GoogleDFPRemoteCommand extends RemoteCommand implements ActivityLif
                     adId,
                     adUnitId));
             return;
+        }
+
+        final View contentView = getContentView(bannerAdToRemove);
+        if (contentView != null) {
+            // Reset margin.
+            ((FrameLayout.LayoutParams) contentView.getLayoutParams())
+                    .bottomMargin = 0;
         }
 
         this.bannerAds.remove(bannerAdToRemove);
@@ -298,7 +322,6 @@ public class GoogleDFPRemoteCommand extends RemoteCommand implements ActivityLif
         String adSizeValue;
 
         for (int i = 0; i < adSizesArray.length(); i++) {
-            // TODO: custom ad size
             if ("BANNER".equals(adSizeValue = adSizesArray.optString(i))) {
                 adSizes[i] = AdSize.BANNER;
             } else if ("LARGE_BANNER".equals(adSizeValue)) {
@@ -327,7 +350,6 @@ public class GoogleDFPRemoteCommand extends RemoteCommand implements ActivityLif
         extractCategoryExclusions(builder, payload);
         extractLocation(builder, payload);
         extractGender(builder, payload);
-        // TODO: extend emulators
         extractTestDevices(builder, payload);
 
         final String requestAgent = payload.optString(KEY_REQUEST_AGENT, null);
@@ -428,12 +450,17 @@ public class GoogleDFPRemoteCommand extends RemoteCommand implements ActivityLif
             return;
         }
         for (int i = 0; i < testDevices.length(); i++) {
-            builder.addTestDevice(testDevices.getString(i));
+            final String testDevice = testDevices.getString(i);
+            if (testDevice.equals("DEVICE_ID_EMULATOR")) {
+                builder.addTestDevice(AdRequest.DEVICE_ID_EMULATOR);
+            } else {
+                builder.addTestDevice(testDevice);
+            }
         }
     }
 
     private static ViewTreeObserver.OnGlobalLayoutListener createBannerGlobalLayoutListener(
-            final View adView, final BannerAdIdentifier adIdentifier) {
+            final PublisherAdView adView, final BannerAdIdentifier adIdentifier) {
 
         return new ViewTreeObserver.OnGlobalLayoutListener() {
 
@@ -443,7 +470,7 @@ public class GoogleDFPRemoteCommand extends RemoteCommand implements ActivityLif
                 final int height = adView.getHeight();
                 View contentView;
 
-                if (height <= 0 || (contentView = this.getContentView()) == null) {
+                if (height <= 0 || (contentView = getContentView(adView)) == null) {
                     // Need a height and a child to modify.
                     return;
                 }
@@ -452,7 +479,6 @@ public class GoogleDFPRemoteCommand extends RemoteCommand implements ActivityLif
 
                 boolean needsNewLayout = false;
 
-                // TODO: support existing margin
                 switch (adIdentifier.getAnchor()) {
                     case TOP:
                         if (contentViewLP.topMargin != height) {
@@ -473,26 +499,25 @@ public class GoogleDFPRemoteCommand extends RemoteCommand implements ActivityLif
                     contentView.setLayoutParams(contentViewLP);
                 }
             }
-
-            private View getContentView() {
-
-                FrameLayout contentViewParent = (FrameLayout) adView.getParent();
-                if (contentViewParent == null) {
-                    return null;
-                }
-
-                for (int i = 0; i < contentViewParent.getChildCount(); i++) {
-                    View child = contentViewParent.getChildAt(i);
-                    if (child.getTag() instanceof AdIdentifier) {
-                        // it's an ad
-                        continue;
-                    }
-
-                    return child;
-                }
-
-                return null;
-            }
         };
+    }
+
+    private static View getContentView(PublisherAdView adView) {
+        FrameLayout contentViewParent = (FrameLayout) adView.getParent();
+        if (contentViewParent == null) {
+            return null;
+        }
+
+        for (int i = 0; i < contentViewParent.getChildCount(); i++) {
+            View child = contentViewParent.getChildAt(i);
+            if (child.getTag() instanceof AdIdentifier) {
+                // it's an ad
+                continue;
+            }
+
+            return child;
+        }
+
+        return null;
     }
 }

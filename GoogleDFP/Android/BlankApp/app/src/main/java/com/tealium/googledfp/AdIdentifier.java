@@ -59,6 +59,7 @@ abstract class AdIdentifier {
             public void onAdClosed() {
                 super.onAdClosed();
                 status = Status.CLOSED;
+                adClosed();
             }
 
             @Override
@@ -85,5 +86,9 @@ abstract class AdIdentifier {
                 status = Status.LOADED;
             }
         };
+    }
+
+    protected void adClosed() {
+
     }
 }

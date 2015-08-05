@@ -33,7 +33,7 @@ utag.mobile.remote_api.response.google_dfp.create_interstitial_ad = function(sta
 };
 
 utag.mobile.remote_api.response.google_dfp.show_interstitial_ad = function(status, message) {
-	console.log("show_interstitial_ad: " + status + "; " + message);
+	console.log("create_interstitial_ad: " + status + "; " + message);
 };
 
 utag.mobile.remote_api.response.google_dfp.get_ads = function(status, message) {
@@ -136,6 +136,7 @@ Interstitial ads are not shown right away and need time to load. The status can 
 * manual_impressions (boolean) *Optional* 
 * publisher_provided_id (String) *Optional* 
 * test_devices (Array) *Optional*
+ * "DEVICE_ID_EMULATOR" for all emulators
 
 *Example*
 
@@ -164,7 +165,7 @@ window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify(
 		tag_for_child_directed_treatment : false,
 		manual_impressions : false,
 		publisher_provided_id : "publisher_provided_id", 
-		test_devices : [ "" ]
+		test_devices : [ "DEVICE_ID_EMULATOR" ]
     }
 })), '_self');
 ```
