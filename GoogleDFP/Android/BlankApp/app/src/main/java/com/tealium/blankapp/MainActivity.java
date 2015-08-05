@@ -3,6 +3,7 @@ package com.tealium.blankapp;
 import com.tealium.blankapp.helper.TealiumHelper;
 
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.os.Bundle;
 
 public class MainActivity extends Activity {
@@ -11,6 +12,11 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+	}
+
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
 	}
 
 	@Override

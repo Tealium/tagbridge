@@ -5,8 +5,21 @@ import org.json.JSONObject;
 
 final class InterstitialAdIdentifier extends AdIdentifier {
 
+    private CloseListener closeListener;
+
     public InterstitialAdIdentifier(String adUnitId, String adId) {
         super(adUnitId, adId);
+    }
+
+    public void setCloseListener(CloseListener closeListener) {
+        this.closeListener = closeListener;
+    }
+
+    @Override
+    protected void adClosed() {
+        if (closeListener != null) {
+            closeListener.onInterstitialAdClose(this);
+        }
     }
 
     @Override
@@ -23,5 +36,9 @@ final class InterstitialAdIdentifier extends AdIdentifier {
         final String id = payload.optString(GoogleDFPRemoteCommand.KEY_AD_ID, null);
 
         return new InterstitialAdIdentifier(adUnitId, id);
+    }
+
+    interface CloseListener {
+        void onInterstitialAdClose(InterstitialAdIdentifier identifier);
     }
 }
