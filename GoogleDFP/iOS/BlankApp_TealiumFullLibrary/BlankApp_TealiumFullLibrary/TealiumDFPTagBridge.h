@@ -11,6 +11,8 @@
 
 @interface TealiumDFPTagBridge : NSObject
 @property (nonatomic, strong) DFPBannerView *bannerView;
+@property (nonatomic, strong) DFPInterstitial *interstitial;
+
 + (instancetype)sharedInstance;
 - (void)addRemoteCommandHandlers;
 - (void)activeViewController:(UIViewController*)viewController;

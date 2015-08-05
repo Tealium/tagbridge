@@ -14,7 +14,7 @@ typedef NSDictionary* (^__VendorMethod)(__weak NSDictionary *data);
 static NSString *const responseCode = @"responseCode";
 static NSString *const responseBody = @"responseBody";
 
-@interface __TLMDFPDelegates : NSObject <GADAppEventDelegate, GADBannerViewDelegate, GADAdSizeDelegate>
+@interface __TLMDFPDelegates : NSObject <GADAppEventDelegate, GADBannerViewDelegate, GADInterstitialDelegate, GADAdSizeDelegate>
 
 @end
 
@@ -32,6 +32,8 @@ static NSString *const responseBody = @"responseBody";
     return _sharedObject;
 }
 
+#pragma mark - GADAdSize + GADAppEvent Delegates
+
 // !!!: GADAdSizeDelegate
 - (void)adView:(DFPBannerView *)view willChangeAdSizeTo:(GADAdSize)size {
     
@@ -41,39 +43,79 @@ static NSString *const responseBody = @"responseBody";
 - (void)adView:(GADBannerView *)banner
 didReceiveAppEvent:(NSString *)name
       withInfo:(NSString *)info{
-    
+        NSLog(@"%s ", __FUNCTION__);
 }
+
+#pragma mark - GADInterstitial Delegates
 
 /// Called when the interstitial receives an app event.
 - (void)interstitial:(GADInterstitial *)interstitial
   didReceiveAppEvent:(NSString *)name
             withInfo:(NSString *)info{
-    
+    NSLog(@"%s ", __FUNCTION__);
+
 }
+
+- (void)interstitial:(GADInterstitial *)ad didFailToReceiveAdWithError:(GADRequestError *)error{
+        NSLog(@"%s ", __FUNCTION__);
+}
+
+- (void)interstitialDidDismissScreen:(GADInterstitial *)ad{
+        NSLog(@"%s ", __FUNCTION__);
+}
+
+- (void)interstitialDidReceiveAd:(GADInterstitial *)ad{
+        NSLog(@"%s ", __FUNCTION__);
+}
+
+- (void)interstitialWillDismissScreen:(GADInterstitial *)ad{
+        NSLog(@"%s ", __FUNCTION__);
+}
+
+- (void)interstitialWillLeaveApplication:(GADInterstitial *)ad{
+        NSLog(@"%s ", __FUNCTION__);
+}
+
+- (void)interstitialWillPresentScreen:(GADInterstitial *)ad{
+        NSLog(@"%s ", __FUNCTION__);
+}
+
+#pragma mark - GADBannerView Delegates
 
 // !!!: GADBannerViewDelegate
 - (void)adViewDidReceiveAd:(DFPBannerView *)bannerView{
-    
+    NSLog(@"%s ", __FUNCTION__);
+
 }
+
 - (void)adView:(DFPBannerView *)bannerView
 didFailToReceiveAdWithError:(GADRequestError *)error{
-    
+    NSLog(@"%s ", __FUNCTION__);
+
 }
 
 - (void)adViewWillPresentScreen:(DFPBannerView *)bannerView{
+    NSLog(@"%s ", __FUNCTION__);
 
 }
+
 - (void)adViewDidDismissScreen:(DFPBannerView *)bannerView{
-    
+    NSLog(@"%s ", __FUNCTION__);
+
 }
-- (void)adViewWillDismissScreen:(DFPBannerView *)bannerView{
-    
+- (
+   void)adViewWillDismissScreen:(DFPBannerView *)bannerView{
+    NSLog(@"%s ", __FUNCTION__);
+
 }
+
 - (void)adViewWillLeaveApplication:(DFPBannerView *)bannerView{
-    
+    NSLog(@"%s ", __FUNCTION__);
+
 }
 
 @end
+
 
 @interface __TLMDFPBannerView: NSObject
 + (__VendorMethod)createAd;
@@ -106,6 +148,7 @@ didFailToReceiveAdWithError:(GADRequestError *)error{
             [[data objectForKey:@"view_margin_bottom"] integerValue];
         }
         NSString *viewPosition = [data objectForKey:@"view_position"];
+        NSArray *testDevices = data[@"test_devices"];
 
         NSString *add_unit_id = [data valueForKey:@"ad_unit_id"];
         GADAdSize customAdSize;
@@ -179,8 +222,10 @@ didFailToReceiveAdWithError:(GADRequestError *)error{
                 }
                 
                 TLMDFP.bannerView.adUnitID = add_unit_id;
+                
                 TLMDFP.bannerView.rootViewController = viewController;
                 DFPRequest *request = [DFPRequest request];
+                request.testDevices = testDevices;
                 [TLMDFP.bannerView loadRequest:request];
             });
 
@@ -198,6 +243,95 @@ didFailToReceiveAdWithError:(GADRequestError *)error{
 @end
 
 
+@interface __TLMDFPInterstitial : NSObject;
+
++ (__VendorMethod) create_interstitial_ad;
++ (__VendorMethod) show_interstitial_ad;
+
+@end
+
+@implementation __TLMDFPInterstitial;
+
++ (__VendorMethod) create_interstitial_ad {
+    
+    return ^NSDictionary* (__weak NSDictionary *data){
+    
+        NSMutableDictionary *responseData = [[NSMutableDictionary alloc] init];
+        NSString *ad_unit_id = [data valueForKey:@"ad_unit_id"];
+
+        if (!ad_unit_id){
+            [responseData setValue:@400 forKey:responseCode];
+            [responseData setValue:@"no add unit id provided" forKey:responseBody];
+            return responseData;
+        } else {
+            [responseData setValue:@200 forKey:responseCode];
+        }
+        
+        // TODO: Where are we adding this?
+        NSString *ad_id = [data valueForKey:@"ad_id"];
+        
+        UIViewController *viewController = [[TealiumDFPTagBridge sharedInstance] getActiveViewController];
+        
+        if (viewController) {
+            TealiumDFPTagBridge *TLMDFP = [TealiumDFPTagBridge sharedInstance];
+            TLMDFP.interstitial = [[DFPInterstitial alloc] initWithAdUnitID:ad_unit_id];
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                TLMDFP.interstitial.adUnitID = ad_unit_id;
+                TLMDFP.interstitial.delegate = [__TLMDFPDelegates sharedInstance];
+                TLMDFP.interstitial.appEventDelegate = [__TLMDFPDelegates sharedInstance];
+                
+                // Not supported
+                TLMDFP.interstitial.customRenderedInterstitialDelegate = nil;
+                
+                DFPRequest *request = [DFPRequest request];
+                NSArray *testDevices = data[@"test_devices"];
+                request.testDevices = testDevices;
+                [TLMDFP.interstitial loadRequest:request];
+            });
+        }
+        else {
+            [responseData setValue:@500 forKey:responseCode];
+            [responseData setValue:@"no active view controller set" forKey:responseBody];
+        }
+        
+        return responseData;
+    };
+}
+
++ (__VendorMethod) show_interstitial_ad {
+    
+    return ^NSDictionary* (__weak NSDictionary *data){
+        
+        NSMutableDictionary *responseData = [[NSMutableDictionary alloc] init];
+        
+        // TODO: Where are we adding this?
+        NSString *ad_id = [data valueForKey:@"ad_id"];
+        
+        UIViewController *viewController = [[TealiumDFPTagBridge sharedInstance] getActiveViewController];
+        
+        if (viewController) {
+            TealiumDFPTagBridge *TLMDFP = [TealiumDFPTagBridge sharedInstance];
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                
+                DFPRequest *request = [DFPRequest request];
+                NSArray *testDevices = data[@"test_devices"];
+                request.testDevices = testDevices;
+                [TLMDFP.interstitial loadRequest:request];
+            });
+        }
+        else {
+            [responseData setValue:@500 forKey:responseCode];
+            [responseData setValue:@"no active view controller set" forKey:responseBody];
+        }
+        
+        return responseData;
+    };
+}
+
+@end
+
 @interface TealiumDFPTagBridge()
 
 @property (nonatomic, strong) dispatch_queue_t googleDFPDispatchQueue;
@@ -212,7 +346,9 @@ didFailToReceiveAdWithError:(GADRequestError *)error{
 
 NSString *const google_dfp = @"google_dfp";
 NSString *const google_dfp_description = @"google dfp";
-NSString *const create_ad = @"create_ad";
+NSString *const create_banner_ad = @"create_banner_ad";
+NSString *const create_interstitial_ad = @"create_interstitial_ad";
+NSString *const show_interstitial_ad = @"show_interstitial_ad";
 
 + (instancetype)sharedInstance
 {
@@ -235,8 +371,8 @@ NSString *const create_ad = @"create_ad";
                     targetQueue:self.googleDFPDispatchQueue
                           block:^(TealiumRemoteCommandResponse *response) {
                               
-                              NSString *methodString = response.requestPayload[@"method"];
-                              NSDictionary *data = response.requestPayload[@"arguments"];
+                              NSString *methodString = response.requestPayload[@"command"];
+                              NSDictionary *data = response.requestPayload[@"payload"];
                               NSDictionary *responseData = [self handleMethodOfType:methodString
                                                                       withInputData:data];
                               NSString *thisResponseBody = [responseData objectForKey:responseBody];
@@ -286,8 +422,9 @@ NSString *const create_ad = @"create_ad";
         
         // Add methods here
         _googleDFPMethodStrings = [[NSMutableDictionary alloc] init];
-        _googleDFPMethodStrings[create_ad] = [__TLMDFPBannerView createAd];
-        
+        _googleDFPMethodStrings[create_banner_ad] = [__TLMDFPBannerView createAd];
+        _googleDFPMethodStrings[create_interstitial_ad] = [__TLMDFPInterstitial create_interstitial_ad];
+        _googleDFPMethodStrings[show_interstitial_ad] = [__TLMDFPInterstitial show_interstitial_ad];
     }
     return self;
 }
@@ -298,14 +435,16 @@ NSString *const create_ad = @"create_ad";
 {
     __VendorMethod thisVendorMethod = (__VendorMethod)[_googleDFPMethodStrings objectForKey:methodType];
     NSDictionary *responseDict = [[NSDictionary alloc] init];
+    
     if (thisVendorMethod){
         responseDict = thisVendorMethod(inputData);
     }
     else{
         NSLog(@"unsupported method type: %@", methodType);
-        [responseDict setValue:@500 forKey:@"responseCode"];
-        [responseDict setValue:@"No method found" forKey:@"responseBody"];
-        return responseDict;
+        responseDict = @{
+                         @"responseCode":@500,
+                         @"responseBody":@"No method found"
+                         };
     }
     
     return responseDict;
