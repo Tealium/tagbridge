@@ -20,7 +20,7 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     
-    [Tealium initSharedInstance:@"ACCOUNT" profile:@"PROFILE" target:@"dev"
+    [Tealium initSharedInstance:@"poc-globo-mobile" profile:@"ad-display-ios" target:@"dev"
                         options:TLDisplayVerboseLogs globalCustomData:@{}];
     [[TealiumDFPTagBridge sharedInstance] addRemoteCommandHandlers];
     
