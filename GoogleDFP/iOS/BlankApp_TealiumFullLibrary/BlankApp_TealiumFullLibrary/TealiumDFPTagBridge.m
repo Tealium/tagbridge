@@ -36,7 +36,7 @@ static NSString *const responseBody = @"responseBody";
 
 // !!!: GADAdSizeDelegate
 - (void)adView:(DFPBannerView *)view willChangeAdSizeTo:(GADAdSize)size {
-    
+     NSLog(@"%s ", __FUNCTION__);
 }
 
 // !!!: GADAppEventDelegate
@@ -57,7 +57,7 @@ didReceiveAppEvent:(NSString *)name
 }
 
 - (void)interstitial:(GADInterstitial *)ad didFailToReceiveAdWithError:(GADRequestError *)error{
-        NSLog(@"%s ", __FUNCTION__);
+    NSLog(@"%s ERROR: %@", __FUNCTION__, [error localizedDescription]);
 }
 
 - (void)interstitialDidDismissScreen:(GADInterstitial *)ad{
@@ -90,7 +90,7 @@ didReceiveAppEvent:(NSString *)name
 
 - (void)adView:(DFPBannerView *)bannerView
 didFailToReceiveAdWithError:(GADRequestError *)error{
-    NSLog(@"%s ", __FUNCTION__);
+    NSLog(@"%s ERROR:%@ ", __FUNCTION__, [error localizedDescription]);
 
 }
 
@@ -222,7 +222,6 @@ didFailToReceiveAdWithError:(GADRequestError *)error{
                 }
                 
                 TLMDFP.bannerView.adUnitID = add_unit_id;
-                
                 TLMDFP.bannerView.rootViewController = viewController;
                 DFPRequest *request = [DFPRequest request];
                 request.testDevices = testDevices;
@@ -238,7 +237,6 @@ didFailToReceiveAdWithError:(GADRequestError *)error{
         return responseData;
     };
 }
-
 
 @end
 
@@ -266,7 +264,8 @@ didFailToReceiveAdWithError:(GADRequestError *)error{
         } else {
             [responseData setValue:@200 forKey:responseCode];
         }
-        
+        NSArray *testDevices = data[@"test_devices"];
+
         // TODO: Where are we adding this?
         NSString *ad_id = [data valueForKey:@"ad_id"];
         
@@ -274,9 +273,10 @@ didFailToReceiveAdWithError:(GADRequestError *)error{
         
         if (viewController) {
             TealiumDFPTagBridge *TLMDFP = [TealiumDFPTagBridge sharedInstance];
-            TLMDFP.interstitial = [[DFPInterstitial alloc] initWithAdUnitID:ad_unit_id];
             
             dispatch_async(dispatch_get_main_queue(), ^{
+                
+                TLMDFP.interstitial = [[DFPInterstitial alloc] initWithAdUnitID:ad_unit_id];
                 TLMDFP.interstitial.adUnitID = ad_unit_id;
                 TLMDFP.interstitial.delegate = [__TLMDFPDelegates sharedInstance];
                 TLMDFP.interstitial.appEventDelegate = [__TLMDFPDelegates sharedInstance];
@@ -285,7 +285,6 @@ didFailToReceiveAdWithError:(GADRequestError *)error{
                 TLMDFP.interstitial.customRenderedInterstitialDelegate = nil;
                 
                 DFPRequest *request = [DFPRequest request];
-                NSArray *testDevices = data[@"test_devices"];
                 request.testDevices = testDevices;
                 [TLMDFP.interstitial loadRequest:request];
             });
@@ -372,7 +371,7 @@ NSString *const show_interstitial_ad = @"show_interstitial_ad";
                           block:^(TealiumRemoteCommandResponse *response) {
                               
                               NSString *methodString = response.requestPayload[@"command"];
-                              NSDictionary *data = response.requestPayload[@"payload"];
+                              NSDictionary *data = response.requestPayload;
                               NSDictionary *responseData = [self handleMethodOfType:methodString
                                                                       withInputData:data];
                               NSString *thisResponseBody = [responseData objectForKey:responseBody];
@@ -449,7 +448,6 @@ NSString *const show_interstitial_ad = @"show_interstitial_ad";
     
     return responseDict;
 }
-
 
 - (void)activeViewController:(UIViewController*)viewController{
     self.activeViewController = viewController;
