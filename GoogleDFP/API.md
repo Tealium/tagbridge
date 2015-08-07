@@ -225,7 +225,7 @@ window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify(
     }, 
     payload : {
 		command : "remove_ad",
-		ad_id : "mainview_bottom_banner_ad"
+		ad_id : "mainview_interstitial_ad"
     }
 })), '_self');
 ```
