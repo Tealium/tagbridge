@@ -3,6 +3,8 @@ package com.tealium.googledfp;
 import android.app.Activity;
 import android.app.Application;
 import android.location.Location;
+import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;

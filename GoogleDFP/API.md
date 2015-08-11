@@ -209,6 +209,32 @@ window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify(
 })), '_self');
 ```
 
+*Returned String*
+
+```
+[{"is_visible":true,"banner_anchor":"BOTTOM","type":"BANNER","ad_id":"mainview_bottom_banner_ad","status":"LOADED","ad_unit_id":"\/6499\/example\/banner"},{"type":"INTERSTITIAL","ad_id":"mainview_interstitial_ad","status":"FAILED_TO_LOAD","ad_unit_id":"\/6499\/example\/interstitial"}]
+```
+
+*Formatted:*
+
+```javascript
+[ 
+	{ 
+		"is_visible":true,
+		"banner_anchor":"BOTTOM",
+		"type":"BANNER",
+		"ad_id":"mainview_bottom_banner_ad",
+		"status":"LOADED",
+		"ad_unit_id":"/6499/example/banner"
+	},{
+		"type":"INTERSTITIAL",
+		"ad_id":"mainview_interstitial_ad",
+		"status":"FAILED_TO_LOAD", // Device id wasn't provided
+		"ad_unit_id":"/6499/example/interstitial"
+	}
+]
+```
+
 ## remove_ad
 
 Remove a visible ad from by its unit id.
@@ -225,7 +251,7 @@ window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify(
     }, 
     payload : {
 		command : "remove_ad",
-		ad_id : "mainview_bottom_banner_ad"
+		ad_id : "mainview_interstitial_ad"
     }
 })), '_self');
 ```
