@@ -7,7 +7,6 @@
 //
 
 #import "VendorAdViewController.h"
-#import "TealiumDFPTagBridge.h"
 #import "TEALGoogleDFPRemoteCommands.h"
 
 @interface VendorAdViewController ()
@@ -19,7 +18,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [[TEALGoogleDFPRemoteCommands sharedInstance] setActiveViewController:self];
-//    [[TealiumDFPTagBridge sharedInstance] activeViewController:self];
 }
 
 @end

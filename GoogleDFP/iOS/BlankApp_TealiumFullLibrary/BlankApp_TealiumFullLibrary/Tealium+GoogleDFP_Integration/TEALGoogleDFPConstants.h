@@ -31,6 +31,8 @@ extern NSString *const KEY_CUSTOM_TARGETING;
 extern NSString *const KEY_GENDER;
 extern NSString *const KEY_KEYWORDS;
 extern NSString *const KEY_LOCATION;
+extern NSString *const KEY_LATITUDE;
+extern NSString *const KEY_LONGITUDE;
 extern NSString *const KEY_MANUAL_IMPRESSIONS;
 extern NSString *const KEY_PUBLISHER_PROVIDED_ID;
 extern NSString *const KEY_REQUEST_AGENT;

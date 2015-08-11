@@ -82,7 +82,7 @@
 - (void) createBannerAdWithResponse:(TealiumRemoteCommandResponse*)response {
         NSLog(@"%s ", __FUNCTION__);
     
-    NSDictionary *payload = response.requestPayload;
+    __block NSDictionary *payload = response.requestPayload;
     __block NSString *adUnitID = payload[KEY_AD_UNIT_ID];
     
     if (!adUnitID){
@@ -99,16 +99,17 @@
         return;
     }
     
-    __block NSString *adID = payload[KEY_AD_ID];
-    __block NSArray *testDevices = payload[KEY_TEST_DEVICES];
-    __block NSArray *bannerAdSizesStrings = payload[KEY_BANNER_AD_SIZES];
     
-    __weak TEALGoogleDFPRemoteCommands *weakSelf = self;
+    __block __weak TEALGoogleDFPRemoteCommands *weakSelf = self;
     
     dispatch_async(dispatch_get_main_queue(), ^{
         
+        NSString *adID = payload[KEY_AD_ID];
+        NSString *anchor = payload[KEY_BANNER_ANCHOR];
+        NSArray *bannerAdSizesStrings = payload[KEY_BANNER_AD_SIZES];
         NSArray *bannerSizes = [weakSelf bannerAdSizesFromArrayOfStrings:bannerAdSizesStrings];
-        
+        BOOL manualImpressions = [payload[KEY_MANUAL_IMPRESSIONS] boolValue];
+
         if ([bannerSizes count] == 0) {
             response.body = @"No valid banner sizes received from request payload";
             response.status = TealiumRC_Malformed;
@@ -122,16 +123,16 @@
         DFPBannerView *bannerView = [[DFPBannerView alloc] initWithAdSize:size];
         
         [bannerView teal_setAdID:adID];
+        [bannerView teal_setAnchor:anchor];
         bannerView.validAdSizes = bannerSizes;
         bannerView.adUnitID = adUnitID;
         bannerView.adSizeDelegate = weakSelf;
         bannerView.appEventDelegate = weakSelf;
         bannerView.delegate = weakSelf;
         bannerView.rootViewController = weakSelf.activeViewController;
+        bannerView.enableManualImpressions = manualImpressions;
         
-        DFPRequest *request = [DFPRequest request];
-        request.testDevices = testDevices;
-
+        DFPRequest *request = [weakSelf dfpRequestFromPayload:payload];
         [bannerView loadRequest:request];
         
         [weakSelf.store addBannerView:bannerView];
@@ -146,7 +147,7 @@
 - (void) createInterstitialAdWithResponse:(TealiumRemoteCommandResponse*)response {
         NSLog(@"%s ", __FUNCTION__);
     
-    NSDictionary *payload = response.requestPayload;
+    __block NSDictionary *payload = response.requestPayload;
     __block NSString *adUnitID = payload[KEY_AD_UNIT_ID];
     
     if (!adUnitID){
@@ -158,7 +159,6 @@
     }
     
     __block NSString *adID = payload[KEY_AD_ID];
-    __block NSArray *testDevices = payload[KEY_TEST_DEVICES];
     
     __weak TEALGoogleDFPRemoteCommands *weakSelf = self;
     
@@ -173,8 +173,7 @@
         // Not supported
         interstitial.customRenderedInterstitialDelegate = nil;
         
-        DFPRequest *request = [DFPRequest request];
-        request.testDevices = testDevices;
+        DFPRequest *request = [self dfpRequestFromPayload:payload];
         [interstitial loadRequest:request];
         
         [interstitial teal_setStatus:STATUS_STRING_CREATED];
@@ -261,6 +260,56 @@
     
     [response send];
 }
+
+- (DFPRequest *) dfpRequestFromPayload:(NSDictionary *)payload {
+    
+    DFPRequest *request = [[DFPRequest alloc] init];
+    
+    // Extract payload data
+    double birthday = [payload[KEY_BIRTHDAY] doubleValue]; // milliseconds
+    NSDate *birthdayDate = [NSDate dateWithTimeIntervalSince1970:(birthday / 1000)]; // seconds
+    NSArray *categoryExclusions = payload[KEY_CATEGORY_EXCLUSIONS];
+    BOOL childTreatment = [payload[KEY_TAG_FOR_CHILD_DIRECTED_TREATMENT] boolValue];
+    NSDictionary *customTargeting = payload[KEY_CUSTOM_TARGETING];
+    NSArray *keywords = payload[KEY_KEYWORDS];
+    NSDictionary *location = payload[KEY_LOCATION];
+    NSString *gender = payload[KEY_GENDER];
+    GADGender gadGender = kGADGenderUnknown;
+    if ([gender isEqualToString:@"MALE"]){
+        gadGender = kGADGenderMale;
+    }
+    if ([gender isEqualToString:@"FEMALE"]){
+        gadGender = kGADGenderFemale;
+    }
+    NSString *publisherID = payload[KEY_PUBLISHER_PROVIDED_ID];
+    NSString *requestAgent = payload[KEY_REQUEST_AGENT];
+    NSArray *testDevices = payload[KEY_TEST_DEVICES];
+
+    // Safely add to request
+    [request tagForChildDirectedTreatment:childTreatment];
+    
+    if (birthdayDate) request.birthday = birthdayDate;
+    if (categoryExclusions) request.categoryExclusions = categoryExclusions;
+    if (customTargeting) request.customTargeting = customTargeting;
+    if (keywords) request.keywords = keywords;
+    if (gadGender) request.gender = gadGender;
+    if (location) {
+        
+        double lat = [location[KEY_LATITUDE] doubleValue];
+        double lon = [location[KEY_LONGITUDE] doubleValue];
+        
+        if (lat && lon){
+            [request setLocationWithLatitude:lat longitude:lon accuracy:100.0];
+        }
+        
+    }
+    if (publisherID) request.publisherProvidedID = publisherID;
+    if (requestAgent) request.requestAgent = requestAgent;
+    if (testDevices) request.testDevices = testDevices;
+    
+    return request;
+}
+
 
 #pragma mark - PRIVATE HELPERS
 
@@ -416,18 +465,24 @@ didReceiveAppEvent:(NSString *)name
     
     dispatch_async(dispatch_get_main_queue(), ^{
     
+        bannerView.alpha = 0.0;
         UIView *view = self.activeViewController.view;
         CGFloat viewH = view.frame.size.height;
         CGFloat bannerH = bannerView.frame.size.height;
         CGFloat bannerW = bannerView.frame.size.width;
-        
+        CGFloat startY = viewH - bannerH;
+        NSString *anchor = [bannerView teal_anchor];
+        if ([anchor isEqualToString:VALUE_TOP]){
+            startY = 0.0;
+        }
+        bannerView.frame = CGRectMake(0.0,
+                                      startY,
+                                      bannerW,
+                                      bannerH);
+        [self.activeViewController.view addSubview:bannerView];
+
         [UIView animateWithDuration:0.5 animations:^{
-            
-            bannerView.frame = CGRectMake(0.0,
-                                          viewH - bannerH,
-                                          bannerW,
-                                          bannerH);
-            [self.activeViewController.view addSubview:bannerView];
+            bannerView.alpha = 1.0;
         }];
     });
 }

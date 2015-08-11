@@ -8,7 +8,6 @@
 
 #import "AppDelegate.h"
 #import <TealiumLibrary/Tealium.h>
-#import "TealiumDFPTagBridge.h"
 #import "TEALGoogleDFPRemoteCommands.h"
 
 @interface AppDelegate ()
@@ -22,8 +21,7 @@
     // Override point for customization after application launch.
     
     [Tealium initSharedInstance:@"tealiummobile" profile:@"demo" target:@"dev"
-                        options:TLDisplayVerboseLogs globalCustomData:@{}];
-//    [[TealiumDFPTagBridge sharedInstance] addRemoteCommandHandlers];
+                        options:TLDisplayVerboseLogs globalCustomData:nil];
     [[TEALGoogleDFPRemoteCommands sharedInstance] enable];
     
     return YES;
