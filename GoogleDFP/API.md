@@ -211,7 +211,9 @@ window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify(
 
 *Returned String*
 
-```[{"is_visible":true,"banner_anchor":"BOTTOM","type":"BANNER","ad_id":"mainview_bottom_banner_ad","status":"LOADED","ad_unit_id":"\/6499\/example\/banner"},{"type":"INTERSTITIAL","ad_id":"mainview_interstitial_ad","status":"FAILED_TO_LOAD","ad_unit_id":"\/6499\/example\/interstitial"}]```
+```
+[{"is_visible":true,"banner_anchor":"BOTTOM","type":"BANNER","ad_id":"mainview_bottom_banner_ad","status":"LOADED","ad_unit_id":"\/6499\/example\/banner"},{"type":"INTERSTITIAL","ad_id":"mainview_interstitial_ad","status":"FAILED_TO_LOAD","ad_unit_id":"\/6499\/example\/interstitial"}]
+```
 
 *Formatted:*
 
