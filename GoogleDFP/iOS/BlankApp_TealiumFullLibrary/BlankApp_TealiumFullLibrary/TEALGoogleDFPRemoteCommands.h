@@ -17,6 +17,7 @@
 @property (nonatomic, strong) dispatch_queue_t dispatchQueue;
 
 + (instancetype) sharedInstance;
+
 - (void) enable;
 
 @end
