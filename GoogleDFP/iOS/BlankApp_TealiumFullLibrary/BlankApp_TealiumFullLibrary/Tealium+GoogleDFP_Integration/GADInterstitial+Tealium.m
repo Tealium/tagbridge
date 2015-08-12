@@ -43,7 +43,7 @@ static CFStringRef  const TEALIUM_KVO_INTERSTITIAL_STATUS = CFSTR("com.tealium.g
 
 - (NSString *) teal_status {
     
-    NSString * status = nil;
+    NSString * status = STATUS_STRING_CREATED;
     
     id rawObj = objc_getAssociatedObject(self, TEALIUM_KVO_INTERSTITIAL_STATUS);
     

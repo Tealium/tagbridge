@@ -38,7 +38,7 @@
     
     [Tealium addRemoteCommandId:@"google_dfp"
                     description:@"google_dfp"
-                    targetQueue:self.dispatchQueue
+                    targetQueue:dispatch_get_main_queue()
                           block:^(TealiumRemoteCommandResponse *response) {
                              
                               NSDictionary *payload = response.requestPayload;
@@ -82,8 +82,8 @@
 - (void) createBannerAdWithResponse:(TealiumRemoteCommandResponse*)response {
         NSLog(@"%s ", __FUNCTION__);
     
-    __block NSDictionary *payload = response.requestPayload;
-    __block NSString *adUnitID = payload[KEY_AD_UNIT_ID];
+    NSDictionary *payload = response.requestPayload;
+    NSString *adUnitID = payload[KEY_AD_UNIT_ID];
     
     if (!adUnitID){
         //TODO: Error reporting
@@ -99,56 +99,55 @@
         return;
     }
     
+    NSString *adID = payload[KEY_AD_ID];
     
-    __block __weak TEALGoogleDFPRemoteCommands *weakSelf = self;
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-        NSString *adID = payload[KEY_AD_ID];
-        NSString *anchor = payload[KEY_BANNER_ANCHOR];
-        NSArray *bannerAdSizesStrings = payload[KEY_BANNER_AD_SIZES];
-        NSArray *bannerSizes = [weakSelf bannerAdSizesFromArrayOfStrings:bannerAdSizesStrings];
-        BOOL manualImpressions = [payload[KEY_MANUAL_IMPRESSIONS] boolValue];
+    [self.store removeAllAdsWithAdID:adID adUnitID:adUnitID];
 
-        if ([bannerSizes count] == 0) {
-            response.body = @"No valid banner sizes received from request payload";
-            response.status = TealiumRC_Malformed;
-            [response send];
-            return;
-        }
-        
-        NSValue *value = bannerSizes[0];
-        
-        GADAdSize size = GADAdSizeFromNSValue(value);
-        DFPBannerView *bannerView = [[DFPBannerView alloc] initWithAdSize:size];
-        
-        [bannerView teal_setAdID:adID];
-        [bannerView teal_setAnchor:anchor];
-        bannerView.validAdSizes = bannerSizes;
-        bannerView.adUnitID = adUnitID;
-        bannerView.adSizeDelegate = weakSelf;
-        bannerView.appEventDelegate = weakSelf;
-        bannerView.delegate = weakSelf;
-        bannerView.rootViewController = weakSelf.activeViewController;
-        bannerView.enableManualImpressions = manualImpressions;
-        
-        DFPRequest *request = [weakSelf dfpRequestFromPayload:payload];
-        [bannerView loadRequest:request];
-        
-        [weakSelf.store addBannerView:bannerView];
-        
-        response.status = TealiumRC_Success;
+    NSString *anchor = payload[KEY_BANNER_ANCHOR];
+    NSArray *bannerAdSizesStrings = payload[KEY_BANNER_AD_SIZES];
+    NSArray *bannerSizes = [self bannerAdSizesFromArrayOfStrings:bannerAdSizesStrings];
+    BOOL manualImpressions = [payload[KEY_MANUAL_IMPRESSIONS] boolValue];
+
+    if ([bannerSizes count] == 0) {
+        response.body = @"No valid banner sizes received from request payload";
+        response.status = TealiumRC_Malformed;
         [response send];
-    });
+        return;
+    }
+    
+//    NSValue *value = bannerSizes[0];
+//    GADAdSize size = GADAdSizeFromNSValue(value);
+    
+    GADAdSize initialAdSize = [self initialAdSizeFromArrayOfStrings:bannerAdSizesStrings];
+    
+    DFPBannerView *bannerView = [[DFPBannerView alloc] initWithAdSize:kGADAdSizeSmartBannerLandscape];//initWithAdSize:initialAdSize];
+    
+    [bannerView teal_setAdID:adID];
+    [bannerView teal_setAnchor:anchor];
+    bannerView.validAdSizes = bannerSizes;
+    bannerView.adUnitID = adUnitID;
+    bannerView.adSizeDelegate = self;
+    bannerView.appEventDelegate = self;
+    bannerView.delegate = self;
+    bannerView.rootViewController = self.activeViewController;
+    bannerView.enableManualImpressions = manualImpressions;
+    
+    DFPRequest *request = [self dfpRequestFromPayload:payload];
+    [bannerView loadRequest:request];
+    
+    [self.store addBannerView:bannerView];
+    
+    response.status = TealiumRC_Success;
+    [response send];
 
     
 }
 
 - (void) createInterstitialAdWithResponse:(TealiumRemoteCommandResponse*)response {
-        NSLog(@"%s ", __FUNCTION__);
+    NSLog(@"%s ", __FUNCTION__);
     
-    __block NSDictionary *payload = response.requestPayload;
-    __block NSString *adUnitID = payload[KEY_AD_UNIT_ID];
+    NSDictionary *payload = response.requestPayload;
+    NSString *adUnitID = payload[KEY_AD_UNIT_ID];
     
     if (!adUnitID){
         //TODO: Error reporting
@@ -158,40 +157,38 @@
         return;
     }
     
-    __block NSString *adID = payload[KEY_AD_ID];
+    NSString *adID = payload[KEY_AD_ID];
     
-    __weak TEALGoogleDFPRemoteCommands *weakSelf = self;
+    [self.store removeAllAdsWithAdID:adID adUnitID:adUnitID];
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-        DFPInterstitial *interstitial = [[DFPInterstitial alloc] initWithAdUnitID:adUnitID];
-        [interstitial teal_setAdID:adID];
-        interstitial.adUnitID = adUnitID;
-        interstitial.delegate = weakSelf;
-        interstitial.appEventDelegate = weakSelf;
-        
-        // Not supported
-        interstitial.customRenderedInterstitialDelegate = nil;
-        
-        DFPRequest *request = [self dfpRequestFromPayload:payload];
-        [interstitial loadRequest:request];
-        
-        [interstitial teal_setStatus:STATUS_STRING_CREATED];
-        [weakSelf.store addInterstitialAd:interstitial];
-        
-        response.status = TealiumRC_Success;
-        [response send];
-    });
+    DFPInterstitial *interstitial = [[DFPInterstitial alloc] initWithAdUnitID:adUnitID];
+    [interstitial teal_setAdID:adID];
+    interstitial.adUnitID = adUnitID;
+    interstitial.delegate = self;
+    interstitial.appEventDelegate = self;
+    
+    // Not supported
+    interstitial.customRenderedInterstitialDelegate = nil;
+    
+    DFPRequest *request = [self dfpRequestFromPayload:payload];
+    [interstitial loadRequest:request];
+    
+    [interstitial teal_setStatus:STATUS_STRING_CREATED];
+    [self.store addInterstitialAd:interstitial];
+    
+    response.status = TealiumRC_Success;
+    [response send];
 }
 
 - (void) getAdsWithResponse:(TealiumRemoteCommandResponse*)response {
     NSLog(@"%s ", __FUNCTION__);
     
+    
     NSString *jsonString = @"";
     NSArray *allAds = [self.store allAdsJSONReady];
     
     response.status = TealiumRC_Malformed;
-
+    
     if ([NSJSONSerialization isValidJSONObject:allAds]) {
         
         NSError *error = [[NSError alloc] init];
@@ -208,6 +205,7 @@
     
     response.body = jsonString;
     [response send];
+    
     
 }
 
@@ -234,10 +232,8 @@
         response.status = STATUS_AD_NOT_READY;
     }
     else {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [interstitial teal_setStatus:STATUS_STRING_OPENED];
-            [interstitial presentFromRootViewController:self.activeViewController];
-        });
+        [interstitial teal_setStatus:STATUS_STRING_OPENED];
+        [interstitial presentFromRootViewController:self.activeViewController];
         response.status = TealiumRC_Success;
     }
     [response send];
@@ -341,7 +337,6 @@
             else if (deviceOrientation == UIDeviceOrientationPortrait || deviceOrientation == UIDeviceOrientationPortraitUpsideDown){
                 return kGADAdSizeSmartBannerPortrait;
             }
-            
         }
         else {
             // TODO: ERROR
@@ -375,17 +370,8 @@
         }
         else if ([string isEqualToString:BANNER_SMART]){
             // TODO: switch depending on device orientation
-            
-            UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
-            if (deviceOrientation == UIDeviceOrientationLandscapeLeft || deviceOrientation == UIDeviceOrientationLandscapeRight ) {
-                
-                [adSizes addObject:NSValueFromGADAdSize(kGADAdSizeSmartBannerLandscape)];
-            }
-            else if (deviceOrientation == UIDeviceOrientationPortrait || deviceOrientation == UIDeviceOrientationPortraitUpsideDown){
-                
-                [adSizes addObject:NSValueFromGADAdSize(kGADAdSizeSmartBannerPortrait)];
-            }
-            
+            [adSizes addObject:NSValueFromGADAdSize(kGADAdSizeSmartBannerLandscape)];
+            [adSizes addObject:NSValueFromGADAdSize(kGADAdSizeSmartBannerPortrait)];
         }
         else {
             // TODO: ERROR
@@ -393,6 +379,69 @@
     }
     return [NSArray arrayWithArray:adSizes];
     
+}
+
+- (GADAdSize) initialAdSizeFromArrayOfStrings:(NSArray *)array {
+    
+    GADAdSize sizeToKeep = kGADAdSizeInvalid;
+    
+    for (NSString *string in array) {
+        if ([string isEqualToString:BANNER_SMART]){
+            // TODO: switch depending on device orientation
+            
+            UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
+            if (deviceOrientation == UIDeviceOrientationLandscapeLeft || deviceOrientation == UIDeviceOrientationLandscapeRight ) {
+                sizeToKeep = [self adSizeWithHigherPriorityBetweenFirstSize:kGADAdSizeSmartBannerLandscape secondSize:sizeToKeep];
+            }
+            else if (deviceOrientation == UIDeviceOrientationPortrait || deviceOrientation == UIDeviceOrientationPortraitUpsideDown){
+                sizeToKeep = [self adSizeWithHigherPriorityBetweenFirstSize:kGADAdSizeSmartBannerPortrait secondSize:sizeToKeep];
+            }
+            
+        }
+        else if ([string isEqualToString:BANNER_FULL]){
+            sizeToKeep = [self adSizeWithHigherPriorityBetweenFirstSize:kGADAdSizeFullBanner secondSize:sizeToKeep];
+        }
+        else if ([string isEqualToString:BANNER_LARGE]){
+            sizeToKeep = [self adSizeWithHigherPriorityBetweenFirstSize:kGADAdSizeLargeBanner secondSize:sizeToKeep];
+        }
+        else if ([string isEqualToString:BANNER_MEDIUM_RECTANGLE]){
+            sizeToKeep = [self adSizeWithHigherPriorityBetweenFirstSize:kGADAdSizeMediumRectangle secondSize:sizeToKeep];
+        }
+        else if ([string isEqualToString:BANNER_LEADERBOARD]){
+            sizeToKeep = [self adSizeWithHigherPriorityBetweenFirstSize:kGADAdSizeLeaderboard secondSize:sizeToKeep];
+        }
+        else if ([string isEqualToString:BANNER]){
+            sizeToKeep = [self adSizeWithHigherPriorityBetweenFirstSize:kGADAdSizeBanner secondSize:sizeToKeep];
+        }
+        
+    }
+    
+    return sizeToKeep;
+
+}
+
+- (GADAdSize) adSizeWithHigherPriorityBetweenFirstSize:(GADAdSize)firstSize secondSize:(GADAdSize)secondSize {
+    
+    CGSize size1 = CGSizeFromGADAdSize(firstSize);
+    CGSize size2 = CGSizeFromGADAdSize(secondSize);
+    
+    if ([self isThisCGSize:size1 smallerThanThisCGSize:size2]){
+        // YES size 1 is smaller - otherwise equal or size 2 larger
+        return secondSize;
+    }
+    
+    return firstSize;
+
+}
+
+-(BOOL) isThisCGSize:(CGSize)firstSize smallerThanThisCGSize:(CGSize)secondSize
+{
+    CGFloat firstArea = firstSize.height * firstSize.width;
+    CGFloat secondArea = secondSize.height * secondSize.width;
+    
+    if ( firstArea <= secondArea) return YES;
+    
+    return NO;
 }
 
 #pragma mark - ERROR HANDLING
@@ -403,7 +452,8 @@
 
 // !!!: GADAdSizeDelegate
 - (void)adView:(DFPBannerView *)view willChangeAdSizeTo:(GADAdSize)size {
-    NSLog(@"%s ", __FUNCTION__);
+    CGSize cgSize = CGSizeFromGADAdSize(size);
+    NSLog(@"%s \n viewH:%f \n viewW:%f \n toSizeH:%f \n toSizeW:%f", __FUNCTION__, view.frame.size.height, view.frame.size.width, cgSize.height, cgSize.width);
 }
 
 // !!!: GADAppEventDelegate

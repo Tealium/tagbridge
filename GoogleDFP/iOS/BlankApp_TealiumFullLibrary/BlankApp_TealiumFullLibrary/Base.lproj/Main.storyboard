@@ -20,8 +20,8 @@
                             <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="tealium_desktop_bg_01-07.jpg" translatesAutoresizingMaskIntoConstraints="NO" id="qeL-NQ-rdT">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                             </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="TEALIUM + GOOGLE DFP" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RZk-Sv-Gz2">
-                                <rect key="frame" x="111" y="281" width="378" height="38"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="  TEALIUM + GOOGLE DFP  " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="12" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="RZk-Sv-Gz2">
+                                <rect key="frame" x="0.0" y="281" width="600" height="38"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="38" id="afD-bE-Lnd"/>
                                 </constraints>
@@ -36,14 +36,18 @@
                             <constraint firstItem="RZk-Sv-Gz2" firstAttribute="leading" secondItem="gXc-Yr-Uym" secondAttribute="leadingMargin" constant="95" id="LZ0-in-Vwy"/>
                             <constraint firstAttribute="trailingMargin" secondItem="RZk-Sv-Gz2" secondAttribute="trailing" constant="95" id="Oem-Jt-8Fe"/>
                             <constraint firstAttribute="centerX" secondItem="qeL-NQ-rdT" secondAttribute="centerX" id="T9n-ta-AwV"/>
+                            <constraint firstAttribute="width" secondItem="RZk-Sv-Gz2" secondAttribute="width" id="VvL-Jq-Wa3"/>
                             <constraint firstItem="qeL-NQ-rdT" firstAttribute="width" secondItem="gXc-Yr-Uym" secondAttribute="width" id="bDe-1A-WRf"/>
                             <constraint firstAttribute="centerY" secondItem="RZk-Sv-Gz2" secondAttribute="centerY" id="cxB-dO-rNc"/>
                             <constraint firstItem="qeL-NQ-rdT" firstAttribute="height" secondItem="gXc-Yr-Uym" secondAttribute="height" id="hen-ua-ohC"/>
                             <constraint firstAttribute="centerY" secondItem="qeL-NQ-rdT" secondAttribute="centerY" id="rLS-qw-2fL"/>
+                            <constraint firstAttribute="centerX" secondItem="RZk-Sv-Gz2" secondAttribute="centerX" id="xNh-Q3-NsO"/>
                         </constraints>
                         <variation key="default">
                             <mask key="constraints">
                                 <exclude reference="3tY-7G-dTI"/>
+                                <exclude reference="LZ0-in-Vwy"/>
+                                <exclude reference="Oem-Jt-8Fe"/>
                             </mask>
                         </variation>
                     </view>
