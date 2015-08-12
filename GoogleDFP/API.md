@@ -180,6 +180,7 @@ Show an existing interstitial ad already created by ```create_interstitial_ad```
 
 *Example*
 
+```javascript
 window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify({
     config : {
         response_id : "show_interstitial_ad"
@@ -190,7 +191,7 @@ window.open('tealium://google_dfp?request=' + encodeURIComponent(JSON.stringify(
 		ad_id : "mainview_interstitial_ad"
     }
 })), '_self');
-
+```
 
 ## get_ads
 
