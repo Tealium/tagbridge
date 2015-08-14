@@ -3,8 +3,6 @@ package com.tealium.googledfp;
 import android.app.Activity;
 import android.app.Application;
 import android.location.Location;
-import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
@@ -124,9 +122,19 @@ public class GoogleDFPRemoteCommand extends RemoteCommand implements
             return;
         }
 
-        final PublisherAdView adView = new PublisherAdView(contentView.getContext());
         final BannerAdIdentifier adIdentifier = BannerAdIdentifier.parseBannerAdIdentifier(
                 response.getRequestPayload());
+
+        if (adIdentifier.getAdId() != null) {
+            // Non-null ad_ids must be unique
+            for (BannerAdIdentifier identifier : this.bannerAds.values()) {
+                if (adIdentifier.getAdId().equals(identifier.getAdId())) {
+                    throw new IllegalArgumentException("An ad with ad_id=" + adIdentifier.getAdId() + " already exists.");
+                }
+            }
+        }
+
+        final PublisherAdView adView = new PublisherAdView(contentView.getContext());
         final PublisherAdRequest adRequest = parsePublisherAdRequest(response.getRequestPayload());
 
         adView.setAdSizes(parseBannerAdSizes(response.getRequestPayload()));
@@ -152,6 +160,16 @@ public class GoogleDFPRemoteCommand extends RemoteCommand implements
 
         final InterstitialAdIdentifier adIdentifier = InterstitialAdIdentifier.parseInterstitialAdIdentifier(
                 response.getRequestPayload());
+
+        if (adIdentifier.getAdId() != null) {
+            // Non-null ad_ids must be unique
+            for (InterstitialAdIdentifier identifier : this.interstitialAds.values()) {
+                if (adIdentifier.getAdId().equals(identifier.getAdId())) {
+                    throw new IllegalArgumentException("An ad with ad_id=" + adIdentifier.getAdId() + " already exists.");
+                }
+            }
+        }
+
         adIdentifier.setCloseListener(this);
         final PublisherInterstitialAd ad = new PublisherInterstitialAd(activity);
         final PublisherAdRequest adRequest = parsePublisherAdRequest(response.getRequestPayload());
