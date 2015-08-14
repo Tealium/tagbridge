@@ -25,6 +25,7 @@ public final class TealiumHelper {
         final GoogleDFPRemoteCommand dfp = new GoogleDFPRemoteCommand(application);
 
         Tealium.initialize(Tealium.Config.create(application, "tealiummobile", "demo", "dev")
+                //.setMobileHtmlUrlOverride("https://tags.tiqcdn.com/utag/tealiummobile/demo/dev/mobile.html")
                 .setLibraryLogLevel(Tealium.LogLevel.VERBOSE)
                 .setJavaScriptLogLevel(Tealium.LogLevel.VERBOSE)
                 .addRemoteCommand(dfp));
