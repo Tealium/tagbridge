@@ -14,10 +14,11 @@
 @interface TEALGoogleDFPRemoteCommands : NSObject <GADAppEventDelegate, GADBannerViewDelegate, GADInterstitialDelegate, GADAdSizeDelegate>
 
 @property (nonatomic, weak)  UIViewController *activeViewController;
+@property (nonatomic, strong) DFPBannerView *activeBanner;
 @property (nonatomic, strong) dispatch_queue_t dispatchQueue;
 
 + (instancetype) sharedInstance;
-
 - (void) enable;
+- (void) refresh;
 
 @end
