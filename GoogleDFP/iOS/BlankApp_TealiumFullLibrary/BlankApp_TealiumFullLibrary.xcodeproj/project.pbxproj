@@ -7,15 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1A5807181B260672007265D1 /* GoogleMobileAds.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A5807171B260672007265D1 /* GoogleMobileAds.framework */; };
 		1A5E3B511B24ABFE004AFF7A /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A5E3B501B24ABFE004AFF7A /* MainViewController.m */; };
-		71077D881B7AA134009F2249 /* GADBannerView+Tealium.m in Sources */ = {isa = PBXBuildFile; fileRef = 71077D7F1B7AA134009F2249 /* GADBannerView+Tealium.m */; };
-		71077D891B7AA134009F2249 /* GADInterstitial+Tealium.m in Sources */ = {isa = PBXBuildFile; fileRef = 71077D811B7AA134009F2249 /* GADInterstitial+Tealium.m */; };
-		71077D8A1B7AA134009F2249 /* TEALGoogleDFPAdStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 71077D831B7AA134009F2249 /* TEALGoogleDFPAdStore.m */; };
-		71077D8B1B7AA134009F2249 /* TEALGoogleDFPConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 71077D851B7AA134009F2249 /* TEALGoogleDFPConstants.m */; };
-		71077D8C1B7AA134009F2249 /* TEALGoogleDFPRemoteCommands.m in Sources */ = {isa = PBXBuildFile; fileRef = 71077D871B7AA134009F2249 /* TEALGoogleDFPRemoteCommands.m */; };
 		71A159AC1B7A9EF6001AC726 /* tealium_desktop_bg_01-07.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 71A159AB1B7A9EF6001AC726 /* tealium_desktop_bg_01-07.jpg */; };
-		71D8B7B31B7E4E5800A271D2 /* TealiumLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 71D8B7B21B7E4E5800A271D2 /* TealiumLibrary.framework */; };
+		71C2BBFE1B8E10680053F6E8 /* GADBannerView+Tealium.m in Sources */ = {isa = PBXBuildFile; fileRef = 71C2BBF51B8E10680053F6E8 /* GADBannerView+Tealium.m */; };
+		71C2BBFF1B8E10680053F6E8 /* GADInterstitial+Tealium.m in Sources */ = {isa = PBXBuildFile; fileRef = 71C2BBF71B8E10680053F6E8 /* GADInterstitial+Tealium.m */; };
+		71C2BC001B8E10680053F6E8 /* TEALGoogleDFPAdStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 71C2BBF91B8E10680053F6E8 /* TEALGoogleDFPAdStore.m */; };
+		71C2BC011B8E10680053F6E8 /* TEALGoogleDFPConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 71C2BBFB1B8E10680053F6E8 /* TEALGoogleDFPConstants.m */; };
+		71C2BC021B8E10680053F6E8 /* TEALGoogleDFPRemoteCommands.m in Sources */ = {isa = PBXBuildFile; fileRef = 71C2BBFD1B8E10680053F6E8 /* TEALGoogleDFPRemoteCommands.m */; };
+		71C2BC041B8E10880053F6E8 /* TealiumLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 71C2BC031B8E10880053F6E8 /* TealiumLibrary.framework */; };
+		71C2BC061B8E18130053F6E8 /* GoogleMobileAds.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 71C2BC051B8E18130053F6E8 /* GoogleMobileAds.framework */; };
 		71D8B7B61B7E537200A271D2 /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 71D8B7B51B7E537200A271D2 /* SecondViewController.m */; };
 		71E381F619E29E0100DFC70E /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 71E381E919E29E0100DFC70E /* AppDelegate.m */; };
 		71E381F719E29E0100DFC70E /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 71E381EA19E29E0100DFC70E /* LaunchScreen.xib */; };
@@ -37,21 +37,21 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		1A5807171B260672007265D1 /* GoogleMobileAds.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = GoogleMobileAds.framework; sourceTree = "<group>"; };
 		1A5E3B4F1B24ABFE004AFF7A /* MainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainViewController.h; sourceTree = "<group>"; };
 		1A5E3B501B24ABFE004AFF7A /* MainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainViewController.m; sourceTree = "<group>"; };
-		71077D7E1B7AA134009F2249 /* GADBannerView+Tealium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "GADBannerView+Tealium.h"; sourceTree = "<group>"; };
-		71077D7F1B7AA134009F2249 /* GADBannerView+Tealium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GADBannerView+Tealium.m"; sourceTree = "<group>"; };
-		71077D801B7AA134009F2249 /* GADInterstitial+Tealium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "GADInterstitial+Tealium.h"; sourceTree = "<group>"; };
-		71077D811B7AA134009F2249 /* GADInterstitial+Tealium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GADInterstitial+Tealium.m"; sourceTree = "<group>"; };
-		71077D821B7AA134009F2249 /* TEALGoogleDFPAdStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TEALGoogleDFPAdStore.h; sourceTree = "<group>"; };
-		71077D831B7AA134009F2249 /* TEALGoogleDFPAdStore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TEALGoogleDFPAdStore.m; sourceTree = "<group>"; };
-		71077D841B7AA134009F2249 /* TEALGoogleDFPConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TEALGoogleDFPConstants.h; sourceTree = "<group>"; };
-		71077D851B7AA134009F2249 /* TEALGoogleDFPConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TEALGoogleDFPConstants.m; sourceTree = "<group>"; };
-		71077D861B7AA134009F2249 /* TEALGoogleDFPRemoteCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TEALGoogleDFPRemoteCommands.h; sourceTree = "<group>"; };
-		71077D871B7AA134009F2249 /* TEALGoogleDFPRemoteCommands.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TEALGoogleDFPRemoteCommands.m; sourceTree = "<group>"; };
 		71A159AB1B7A9EF6001AC726 /* tealium_desktop_bg_01-07.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "tealium_desktop_bg_01-07.jpg"; sourceTree = "<group>"; };
-		71D8B7B21B7E4E5800A271D2 /* TealiumLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TealiumLibrary.framework; path = "../../../../../Tealium/ios-library/TealiumFull/TealiumLibrary.framework"; sourceTree = "<group>"; };
+		71C2BBF41B8E10680053F6E8 /* GADBannerView+Tealium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "GADBannerView+Tealium.h"; sourceTree = "<group>"; };
+		71C2BBF51B8E10680053F6E8 /* GADBannerView+Tealium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GADBannerView+Tealium.m"; sourceTree = "<group>"; };
+		71C2BBF61B8E10680053F6E8 /* GADInterstitial+Tealium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "GADInterstitial+Tealium.h"; sourceTree = "<group>"; };
+		71C2BBF71B8E10680053F6E8 /* GADInterstitial+Tealium.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GADInterstitial+Tealium.m"; sourceTree = "<group>"; };
+		71C2BBF81B8E10680053F6E8 /* TEALGoogleDFPAdStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TEALGoogleDFPAdStore.h; sourceTree = "<group>"; };
+		71C2BBF91B8E10680053F6E8 /* TEALGoogleDFPAdStore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TEALGoogleDFPAdStore.m; sourceTree = "<group>"; };
+		71C2BBFA1B8E10680053F6E8 /* TEALGoogleDFPConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TEALGoogleDFPConstants.h; sourceTree = "<group>"; };
+		71C2BBFB1B8E10680053F6E8 /* TEALGoogleDFPConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TEALGoogleDFPConstants.m; sourceTree = "<group>"; };
+		71C2BBFC1B8E10680053F6E8 /* TEALGoogleDFPRemoteCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TEALGoogleDFPRemoteCommands.h; sourceTree = "<group>"; };
+		71C2BBFD1B8E10680053F6E8 /* TEALGoogleDFPRemoteCommands.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TEALGoogleDFPRemoteCommands.m; sourceTree = "<group>"; };
+		71C2BC031B8E10880053F6E8 /* TealiumLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = TealiumLibrary.framework; sourceTree = "<group>"; };
+		71C2BC051B8E18130053F6E8 /* GoogleMobileAds.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = GoogleMobileAds.framework; sourceTree = "<group>"; };
 		71D8B7B41B7E537200A271D2 /* SecondViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SecondViewController.h; sourceTree = "<group>"; };
 		71D8B7B51B7E537200A271D2 /* SecondViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SecondViewController.m; sourceTree = "<group>"; };
 		71E381E819E29E0100DFC70E /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -80,8 +80,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				71D8B7B31B7E4E5800A271D2 /* TealiumLibrary.framework in Frameworks */,
-				1A5807181B260672007265D1 /* GoogleMobileAds.framework in Frameworks */,
+				71C2BC061B8E18130053F6E8 /* GoogleMobileAds.framework in Frameworks */,
+				71C2BC041B8E10880053F6E8 /* TealiumLibrary.framework in Frameworks */,
 				E77E03BD19C75EDA009D81D5 /* SystemConfiguration.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -89,27 +89,28 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		71077D7D1B7AA134009F2249 /* Tealium+GoogleDFP_Integration */ = {
+		71C2BBF31B8E10680053F6E8 /* Tealium+GoogleDFP_Integration */ = {
 			isa = PBXGroup;
 			children = (
-				71077D7E1B7AA134009F2249 /* GADBannerView+Tealium.h */,
-				71077D7F1B7AA134009F2249 /* GADBannerView+Tealium.m */,
-				71077D801B7AA134009F2249 /* GADInterstitial+Tealium.h */,
-				71077D811B7AA134009F2249 /* GADInterstitial+Tealium.m */,
-				71077D821B7AA134009F2249 /* TEALGoogleDFPAdStore.h */,
-				71077D831B7AA134009F2249 /* TEALGoogleDFPAdStore.m */,
-				71077D841B7AA134009F2249 /* TEALGoogleDFPConstants.h */,
-				71077D851B7AA134009F2249 /* TEALGoogleDFPConstants.m */,
-				71077D861B7AA134009F2249 /* TEALGoogleDFPRemoteCommands.h */,
-				71077D871B7AA134009F2249 /* TEALGoogleDFPRemoteCommands.m */,
+				71C2BBF41B8E10680053F6E8 /* GADBannerView+Tealium.h */,
+				71C2BBF51B8E10680053F6E8 /* GADBannerView+Tealium.m */,
+				71C2BBF61B8E10680053F6E8 /* GADInterstitial+Tealium.h */,
+				71C2BBF71B8E10680053F6E8 /* GADInterstitial+Tealium.m */,
+				71C2BBF81B8E10680053F6E8 /* TEALGoogleDFPAdStore.h */,
+				71C2BBF91B8E10680053F6E8 /* TEALGoogleDFPAdStore.m */,
+				71C2BBFA1B8E10680053F6E8 /* TEALGoogleDFPConstants.h */,
+				71C2BBFB1B8E10680053F6E8 /* TEALGoogleDFPConstants.m */,
+				71C2BBFC1B8E10680053F6E8 /* TEALGoogleDFPRemoteCommands.h */,
+				71C2BBFD1B8E10680053F6E8 /* TEALGoogleDFPRemoteCommands.m */,
 			);
-			path = "Tealium+GoogleDFP_Integration";
+			name = "Tealium+GoogleDFP_Integration";
+			path = "../../Tealium+GoogleDFP_Integration";
 			sourceTree = "<group>";
 		};
 		71E381E719E29E0100DFC70E /* BlankApp_TealiumFullLibrary */ = {
 			isa = PBXGroup;
 			children = (
-				71077D7D1B7AA134009F2249 /* Tealium+GoogleDFP_Integration */,
+				71C2BBF31B8E10680053F6E8 /* Tealium+GoogleDFP_Integration */,
 				71E381E819E29E0100DFC70E /* AppDelegate.h */,
 				71E381E919E29E0100DFC70E /* AppDelegate.m */,
 				71E381EA19E29E0100DFC70E /* LaunchScreen.xib */,
@@ -165,8 +166,8 @@
 		E77E03BB19C75EC5009D81D5 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				71D8B7B21B7E4E5800A271D2 /* TealiumLibrary.framework */,
-				1A5807171B260672007265D1 /* GoogleMobileAds.framework */,
+				71C2BC051B8E18130053F6E8 /* GoogleMobileAds.framework */,
+				71C2BC031B8E10880053F6E8 /* TealiumLibrary.framework */,
 				E77E03BC19C75EDA009D81D5 /* SystemConfiguration.framework */,
 			);
 			name = Frameworks;
@@ -282,13 +283,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				71D8B7B61B7E537200A271D2 /* SecondViewController.m in Sources */,
-				71077D8A1B7AA134009F2249 /* TEALGoogleDFPAdStore.m in Sources */,
-				71077D8B1B7AA134009F2249 /* TEALGoogleDFPConstants.m in Sources */,
-				71077D881B7AA134009F2249 /* GADBannerView+Tealium.m in Sources */,
+				71C2BC001B8E10680053F6E8 /* TEALGoogleDFPAdStore.m in Sources */,
+				71C2BBFE1B8E10680053F6E8 /* GADBannerView+Tealium.m in Sources */,
 				1A5E3B511B24ABFE004AFF7A /* MainViewController.m in Sources */,
-				71077D8C1B7AA134009F2249 /* TEALGoogleDFPRemoteCommands.m in Sources */,
 				71E381FB19E29E0100DFC70E /* main.m in Sources */,
-				71077D891B7AA134009F2249 /* GADInterstitial+Tealium.m in Sources */,
+				71C2BC011B8E10680053F6E8 /* TEALGoogleDFPConstants.m in Sources */,
+				71C2BBFF1B8E10680053F6E8 /* GADInterstitial+Tealium.m in Sources */,
+				71C2BC021B8E10680053F6E8 /* TEALGoogleDFPRemoteCommands.m in Sources */,
 				71E381F619E29E0100DFC70E /* AppDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -440,7 +441,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
-					"/Users/jasonkoo/Tealium/ios-library/TealiumFull",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/BlankApp_TealiumFullLibrary/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -459,7 +459,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
-					"/Users/jasonkoo/Tealium/ios-library/TealiumFull",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/BlankApp_TealiumFullLibrary/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
