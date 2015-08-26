@@ -30,6 +30,10 @@
 
 - (BOOL) addBannerView:(DFPBannerView*)bannerView{
     
+    if (!bannerView){
+        return NO;
+    }
+    
     if ([self.bannerAds containsObject:bannerView]){
         return NO;
     }

@@ -12,6 +12,8 @@
 	<dict>
 		<key>048D109A4175DE6499D9A3B1394270315B181BFC</key>
 		<string>https://github.com/jalakoo/tagbridge.git</string>
+		<key>9DF1701D3851986ABCECC675606B11CDFF753B30</key>
+		<string>https://github.com/Tealium/ios-library.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
 	<string>GoogleDFP/iOS/BlankApp_TealiumFullLibrary/BlankApp_TealiumFullLibrary.xcodeproj</string>
@@ -19,6 +21,8 @@
 	<dict>
 		<key>048D109A4175DE6499D9A3B1394270315B181BFC</key>
 		<string>../../../../..</string>
+		<key>9DF1701D3851986ABCECC675606B11CDFF753B30</key>
+		<string>../../../../../../../Tealium/ios-library</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
 	<string>https://github.com/jalakoo/tagbridge.git</string>
@@ -28,6 +32,14 @@
 	<string>048D109A4175DE6499D9A3B1394270315B181BFC</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>9DF1701D3851986ABCECC675606B11CDFF753B30</string>
+			<key>IDESourceControlWCCName</key>
+			<string>ios-library</string>
+		</dict>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>

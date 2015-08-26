@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="6SU-zB-Ufq">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="doh-BO-QuH">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7703"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
-        <!--Vendor Ad View Controller-->
+        <!--Main View Controller-->
         <scene sceneID="x85-5H-4KX">
             <objects>
-                <viewController id="6SU-zB-Ufq" customClass="VendorAdViewController" sceneMemberID="viewController">
+                <viewController id="6SU-zB-Ufq" customClass="MainViewController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="tJD-Te-W3d"/>
                         <viewControllerLayoutGuide type="bottom" id="pI7-O4-OlO"/>
@@ -20,8 +20,8 @@
                             <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="tealium_desktop_bg_01-07.jpg" translatesAutoresizingMaskIntoConstraints="NO" id="qeL-NQ-rdT">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                             </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="TEALIUM + GOOGLE DFP" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RZk-Sv-Gz2">
-                                <rect key="frame" x="111" y="281" width="378" height="38"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="  TEALIUM + GOOGLE DFP  " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="12" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="RZk-Sv-Gz2">
+                                <rect key="frame" x="0.0" y="281" width="600" height="38"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="38" id="afD-bE-Lnd"/>
                                 </constraints>
@@ -36,19 +36,90 @@
                             <constraint firstItem="RZk-Sv-Gz2" firstAttribute="leading" secondItem="gXc-Yr-Uym" secondAttribute="leadingMargin" constant="95" id="LZ0-in-Vwy"/>
                             <constraint firstAttribute="trailingMargin" secondItem="RZk-Sv-Gz2" secondAttribute="trailing" constant="95" id="Oem-Jt-8Fe"/>
                             <constraint firstAttribute="centerX" secondItem="qeL-NQ-rdT" secondAttribute="centerX" id="T9n-ta-AwV"/>
+                            <constraint firstAttribute="width" secondItem="RZk-Sv-Gz2" secondAttribute="width" id="VvL-Jq-Wa3"/>
                             <constraint firstItem="qeL-NQ-rdT" firstAttribute="width" secondItem="gXc-Yr-Uym" secondAttribute="width" id="bDe-1A-WRf"/>
                             <constraint firstAttribute="centerY" secondItem="RZk-Sv-Gz2" secondAttribute="centerY" id="cxB-dO-rNc"/>
                             <constraint firstItem="qeL-NQ-rdT" firstAttribute="height" secondItem="gXc-Yr-Uym" secondAttribute="height" id="hen-ua-ohC"/>
                             <constraint firstAttribute="centerY" secondItem="qeL-NQ-rdT" secondAttribute="centerY" id="rLS-qw-2fL"/>
+                            <constraint firstAttribute="centerX" secondItem="RZk-Sv-Gz2" secondAttribute="centerX" id="xNh-Q3-NsO"/>
                         </constraints>
                         <variation key="default">
                             <mask key="constraints">
                                 <exclude reference="3tY-7G-dTI"/>
+                                <exclude reference="LZ0-in-Vwy"/>
+                                <exclude reference="Oem-Jt-8Fe"/>
                             </mask>
                         </variation>
                     </view>
+                    <navigationItem key="navigationItem" id="v9N-Ri-DMz">
+                        <barButtonItem key="rightBarButtonItem" title="Next" id="XsC-s3-bEl">
+                            <connections>
+                                <segue destination="nRs-PJ-bp2" kind="show" id="YOH-s5-lIb"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Gxx-xm-Fdt" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1044" y="992"/>
+        </scene>
+        <!--Second View Controller-->
+        <scene sceneID="QDh-sy-i9p">
+            <objects>
+                <viewController id="nRs-PJ-bp2" customClass="SecondViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="Vch-6S-11s"/>
+                        <viewControllerLayoutGuide type="bottom" id="r8U-I3-XWv"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="4ha-t3-V5r">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="right" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="tealium_desktop_bg_01-07.jpg" translatesAutoresizingMaskIntoConstraints="NO" id="0OH-5v-0xw">
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="SECOND VIEW" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="12" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="IRe-hN-rm2">
+                                <rect key="frame" x="0.0" y="281" width="600" height="38"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="38" id="UoQ-dA-Cvg"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="32"/>
+                                <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="IRe-hN-rm2" firstAttribute="width" secondItem="4ha-t3-V5r" secondAttribute="width" id="8IL-87-phF"/>
+                            <constraint firstAttribute="centerY" secondItem="0OH-5v-0xw" secondAttribute="centerY" id="RfZ-sH-E0V"/>
+                            <constraint firstItem="0OH-5v-0xw" firstAttribute="width" secondItem="4ha-t3-V5r" secondAttribute="width" id="dxw-af-Akj"/>
+                            <constraint firstItem="0OH-5v-0xw" firstAttribute="height" secondItem="4ha-t3-V5r" secondAttribute="height" id="mUd-Ta-CG9"/>
+                            <constraint firstAttribute="centerX" secondItem="0OH-5v-0xw" secondAttribute="centerX" id="nsf-Cf-cDn"/>
+                            <constraint firstAttribute="centerX" secondItem="IRe-hN-rm2" secondAttribute="centerX" id="pXl-rZ-dLN"/>
+                            <constraint firstAttribute="centerY" secondItem="IRe-hN-rm2" secondAttribute="centerY" id="yzV-7d-nA1"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Oj3-Ab-tEq" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1772" y="992"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="39G-Lf-0vb">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="doh-BO-QuH" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="jym-kQ-nT0">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="6SU-zB-Ufq" kind="relationship" relationship="rootViewController" id="rHR-qJ-9dX"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="kOB-ww-xIV" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="295" y="992"/>
         </scene>
