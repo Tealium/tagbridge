@@ -79,6 +79,9 @@
     }
     
     [self log:[NSString stringWithFormat:@"%s", __FUNCTION__]];
+    
+    // NOTE: Update if wanting better view resizing logic
+    
     [self adViewDidReceiveAd:self.activeBanner];
 }
 
