@@ -28,7 +28,21 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-public class GoogleDFPRemoteCommand extends RemoteCommand implements
+/**
+ * The TagBridge module for Google Play Service's Ads.
+ * <p/>
+ * The following dependencies will need to be added to the build.gradle file:
+ * <p/>
+ * <pre>
+ *     compile 'com.google.android.gms:play-services-ads:7.5.0'
+ *     compile files('libs/tealium.4.1.3c.jar')
+ * </pre>
+ * <p/>
+ * Once added, add a new instance of this module to {@link com.tealium.library.Tealium.Config#addRemoteCommand(RemoteCommand)}.
+ * <p/>
+ * Minimum supported API: 14
+ */
+public final class GoogleDFPRemoteCommand extends RemoteCommand implements
         ActivityLifecycleCallbacks.VisiblityListener, InterstitialAdIdentifier.CloseListener {
 
     static final String KEY_AD_UNIT_ID = "ad_unit_id";
