@@ -9,16 +9,21 @@
 #import <Foundation/Foundation.h>
 #import <GoogleMobileAds/GoogleMobileAds.h>
 
-//typedef void (^TEALBooleanCompletionBlock)(BOOL success, NSError *error);
 
 @interface TEALGoogleDFPRemoteCommands : NSObject <GADAppEventDelegate, GADBannerViewDelegate, GADInterstitialDelegate, GADAdSizeDelegate>
 
 @property (nonatomic, weak)  UIViewController *activeViewController;
-@property (nonatomic, strong) DFPBannerView *activeBanner;
-@property (nonatomic, strong) dispatch_queue_t dispatchQueue;
 
 + (instancetype) sharedInstance;
+
+/*
+ Starts the module listeners
+ */
 - (void) enable;
+
+/*
+ Recreates any active ads onto the current view controller. Call this after changing the active view controller if wanting to continuously display a previously presented banner ad.
+ */
 - (void) refresh;
 
 @end

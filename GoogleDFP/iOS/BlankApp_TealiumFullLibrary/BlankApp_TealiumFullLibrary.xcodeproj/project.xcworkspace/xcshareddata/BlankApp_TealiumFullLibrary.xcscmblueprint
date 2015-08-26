@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "048D109A4175DE6499D9A3B1394270315B181BFC",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "048D109A4175DE6499D9A3B1394270315B181BFC" : 0,
+    "9DF1701D3851986ABCECC675606B11CDFF753B30" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "AAA250BC-A4F1-4AD0-B66B-CE1DCFD2BEF5",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "048D109A4175DE6499D9A3B1394270315B181BFC" : "tagbridge",
+    "9DF1701D3851986ABCECC675606B11CDFF753B30" : "Tealium\/ios-library"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "BlankApp_TealiumFullLibrary",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 203,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "GoogleDFP\/iOS\/BlankApp_TealiumFullLibrary\/BlankApp_TealiumFullLibrary.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/jalakoo\/tagbridge.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "048D109A4175DE6499D9A3B1394270315B181BFC"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/Tealium\/ios-library.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "9DF1701D3851986ABCECC675606B11CDFF753B30"
+    }
+  ]
+}

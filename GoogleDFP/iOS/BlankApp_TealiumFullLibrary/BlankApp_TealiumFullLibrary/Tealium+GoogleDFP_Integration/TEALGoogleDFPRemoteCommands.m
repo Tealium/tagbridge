@@ -15,7 +15,9 @@
 
 @interface TEALGoogleDFPRemoteCommands()
 
+@property (nonatomic, strong) DFPBannerView *activeBanner;
 @property (nonatomic, strong) TEALGoogleDFPAdStore *store;
+@property (nonatomic, strong) dispatch_queue_t dispatchQueue;
 
 @end
 
