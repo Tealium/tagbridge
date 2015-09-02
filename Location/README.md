@@ -1,211 +1,125 @@
-# TagBridge Specification
+# Brief 
 
-The contents of this directory are the various modules built utilizing TagBridge. 
+This module incorporates device location tracking into TagBridge. The command id for this module is ```_location```. 
 
-## Brief
+## Methods
 
-This document specifies the format of a TagBridge request, and how the native implementations should respond to a request. 
+* [get_location](#get_location)
+* [cancel](#cancel)
 
-## Table of Contents
+## Methods Detail
 
-* [Request Specification](#request-specification)
-* [Meta Keys](#meta-keys)
- * [config](#config)
- * [payload](#payload)
-* [Response Specification](#response-specification)
-* [Response Statuses](#response-statuses)
- * [200](#200)
- * [400](#400)
- * [404](#404)
- * [555](#555)
-* [Reserved Remote Commands](#reserved-remote-commands)
- * [_http](#_http)
- * [_push](#_push)
- * [_mobilecompanion](#_mobilecompanion)
+### get_location
 
-
-## Request Specification
-
-A request is a native command invocation and is identical to a web-request but instead of say ```http://tealium.com``` it would look like ```tealium://foo?request="%7B%22config%22%3A%7B%22response_id%22%3A%2212345%22%7D%7D"```.
-
-| Component | Description | Specification | Example |
-| --------- | ----------- | ---------- | ------- |
-| Protocol | Name of the protocol. | Must be ```tealium``` | ```tealium://``` |
-| Address | Command Id | dom-acceptable: must match the regex ```^[\w-]*$```. | ```command-id``` |
-| QueryString-key | Single key which provides callback info and payload. | must be ```request``` | ```?request=``` |
-| QueryString-value | A url-encoded JSON object consisting of meta-keys and objects. | Valid URL-encoded stringified JSON Object | ```"%7B%22config%22%3A%7B%22response_id%22%3A%2212345%22%7D%7D"``` |
-| [Meta-key](#meta-keys) | Key specifying TagBridge response.  | Predefined keys only. | [config](#config) &amp; [payload](#payload) |
-
-## Meta Keys
-
-These keys instruct the native TagBridge components how to perform and respond to a given request.
-
-### config
-These keys provide TagBridge with additional info in order to complete the request. Entries belong in the table below. 
-
-* *optional*
-* **type**: JSON object
-
-##### Header Names
-
-| Name | Type | Description | 
-| ---- | ---- | ----------- |
-| response_id | string | The index of the JavaScript callback. |
-
-### payload
-If defined, this JSON object will be passed as the argument to the native implementation of the command, else an empty JSON object will be provided. 
-
-* *optional*
-* **type**: JSON object
-
-
-## Response Specification
-
-Per request, the TagBridge tag will create the following callback: 
+Get the next update from the device's location service. If the timeout is reached, an outdated/previous location or null will be returned. Otherwise a stringified JSON object with the keys ```latitude``` and ```longitude``` will be returned. If multiple queries are made before and a location update occurs before any timeout, the same location will be returned to both callbacks. 
 
 ```javascript
-utag.mobile.remote_api.response[command_id][response_id] = function(status, message) {
-    //...
-}
+// if null the callback will look like:
+utag.mobile.remote_api.response['_location'][responseId](204);
+
+// otherwise
+utag.mobile.remote_api.response['_location'][responseId](200, "{\"latitude\":\"0\",\"longitude\":\"0\"}");
 ```
 
-* command_id
- * **type**: string
- * The TagBridge command name, will match the address in the request.
-* response_id
- * **type**: string
- * [Header Key](#config), should be unique per request.
-* [status](#response-statuses)
- * **type**: integer/number
- * Status response from the native TagBridge system. 
-* message
- * *optional*
- * **type**: string
- * Can be anything returned by a TagBridge command. 
- 
-## Response Statuses
+Arguments:
 
-##### 200
+* timeout : long (Android &amp; iOS)
+ * Required
+* min_distance : float/double (Android &amp; iOS)
+ * Optional
+* provider : array or string (Android) 
+ * Required
+* min_time : long (Android &amp; iOS)
+ * Optional
+* desired_accuracy : int (iOS)
+ * Required
+* activity_type : int (iOS)
+ * Optional
 
-The command id was found, and processed as expected.
-
-##### 400
-
-The JSON object value for the [payload](#payload) [meta-key](#meta-key) was not what the native command expected. 
-
-##### 404
-
-No command was found matching the given command id.
-
-##### 555
-
-A native exception was thrown, a stringified stack trace is passed as the message body.
-
-## Reserved Remote Commands
-
-These commands will be available on both iOS and Android starting version 4.1.
-
-* [_http](#_http)
-* [_push](#_push)
-* [_mobilecompanion](#_mobilecompanion)
-
----
-
-#### _http
-
-Perform a http operation bypassing a CORS violation. 
-
-**Required Keys**
-
-* url
-* method
-
-**Returned Parameters**
-
-* status
- * Server provided http status code (usually [200](#200))
- * [400](#400) for a malformed argument. 
- * [555](#555) for a native runtime error. 
-* message
- * Response if available, otherwise if [400](#400) or [555](#555), the error message is provided.
-
-**Example**
+Direct call: 
 
 ```javascript
-var response_id = new Date().getTime();
-
-window.open('tealium://_http?request=' + encodeURIComponent(JSON.stringify({
+window.open('tealium://_location?request=' + encodeURIComponent(JSON.stringify({
 	config : {
-		response_id : response_id
+		response_id : responseId
 	}, 
 	payload : {
-		authenticate : {
-			username : '<username>',
-			password : '<password>'
-		}, // http://username:password@url...
-		url : '<url>',
-		headers : {
-			'<header>' : '<value>'
-		},
-		parameters : {
-			'<someKey>' : '<someValue>'
-		},// http://url.com?someKey=someValue...
-		body : {
-			'<someKey>' : '<someValue>'
-		}, // Or String, thought if a given JSON the structure will be converted into a form submission.
-		method : '<POST/GET/PUT>'
+		method : 'get_location',
+		arguments : {
+			// (long) *required
+			// time in ms before returning a cached or null last position.
+			timeout : 60000 
+			// (decimal (float android, double iOS)) *optional (default 0 android) 
+			// minimum distance between location updates, in meters
+			min_distance : 500,			
+			// (array or string) *required, Android-only.
+			// "gps", "network", "passive"
+			provider : ["gps"],
+			// (long) *optional Android-only. Default 0.
+			// minimum time interval between location updates, in milliseconds
+			min_time : 0,
+			// (int), *required, iOS-only.
+			// kCLLocationAccuracyBestForNavigation = 1, kCLLocationAccuracyBest = 2, 
+			// kCLLocationAccuracyNearestTenMeters = 3, kCLLocationAccuracyHundredMeters = 4, 
+			// kCLLocationAccuracyKilometer = 5, kCLLocationAccuracyThreeKilometers = 6
+			desired_accuracy : 1,
+			// (int), *optional, iOS-only.
+			//  CLActivityTypeOther = 1, CLActivityTypeAutomotiveNavigation = 2
+			//  CLActivityTypeFitness = 3, CLActivityTypeOtherNavigation = 4
+			activity_type : 1
+		}
 	}
 })), '_self');
 ```
 
----
+#### Additional Android Notes
 
-#### _push
+Note the following providers require the following permissions: 
 
-Register to receive push notifications.
+* "gps" - ACCESS_FINE_LOCATION
+* "network" - ACCESS_FINE_LOCATION or ACCESS_COARSE_LOCATION
+* "passive" - ACCESS_FINE_LOCATION
 
-**Required Keys**
+If a provider is attempted without the appropriate permission declared by the app, the TagBridge callback will receive a status 555 accompanied by a stringified stack trace looking something like: 
 
-* project_number (Android only)
-
-**Returned Parameters**
-
-* status
- * [200](#200) if successfully retrieved.
- * [400](#400) for a malformed argument.
- * [555](#555) for a native runtime error. 
-* message
- * Push token if available, otherwise if [400](#400) or [555](#555), the error message is provided.
-
-**Example**
-
-```javascript
-var response_id = new Date().getTime();
-
-window.open('tealium://_push?request=' + encodeURIComponent(JSON.stringify({
-	config : {
-		response_id : response_id
-	}, 
-	payload : {
-		project_number : '<project number>' // Provided by the Google Developers Console
-	}
-})), '_self');
+```
+java.lang.SecurityException: "network" location provider requires ACCESS_COARSE_LOCATION or ACCESS_FINE_LOCATION permission.
+	at android.os.Parcel.readException(Parcel.java:1465)
+	at android.os.Parcel.readException(Parcel.java:1419)
+	at android.location.ILocationManager$Stub$Proxy.requestLocationUpdates(ILocationManager.java:540)
+	at android.location.LocationManager.requestLocationUpdates(LocationManager.java:860)
+	at android.location.LocationManager.requestLocationUpdates(LocationManager.java:454)
+	at com.tealium.location.LocationRemoteCommand.start(LocationRemoteCommand.java:38)
+	at com.tealium.location.LocationRemoteCommand.onInvoke(LocationRemoteCommand.java:76)
+	at com.tealium.library.RemoteCommand.a(Unknown Source)
+	at com.tealium.library.ah.a(Unknown Source)
+	...
 ```
 
-#### _mobilecompanion
+### cancel
 
-Launch Mobile Companion (if unlocked by the Mobile Publish Settings).
+This will prompt the module to cancel checking for updates. If the ```response_ids``` key is specified, only the response_ids specified will be cancelled. Otherwise all queued requests will be removed. 
 
-**Returned Parameters**
+Arguments: 
 
-* status
- * [200](#200) successfully launched.
- * [555](#555) Mobile Companion is not enabled by the Mobile Publish Settings.
-* message
- * null.
+* response_ids : array (Android &amp; iOS)
+ * Optional; 
+ * When specified, its element response_ids will be cancelled. 
+ * When absent, all queued requests will perform their "timeout" operation.
 
-**Example**
+Direct call: 
 
 ```javascript
-window.open('tealium://_mobilecompanion', '_self');
+window.open('tealium://_location?request=' + encodeURIComponent(JSON.stringify({
+	config : {
+		response_id : responseId
+	}, 
+	payload : {
+		method : 'cancel'
+		arguments : {
+			// (array of strings) *optional; if not specified all queued are removed.
+			response_ids : []
+		}
+	}
+})), '_self');
 ```

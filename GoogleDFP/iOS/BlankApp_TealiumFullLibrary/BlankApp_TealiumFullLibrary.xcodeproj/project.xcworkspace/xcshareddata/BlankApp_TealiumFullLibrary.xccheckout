@@ -22,7 +22,7 @@
 		<key>048D109A4175DE6499D9A3B1394270315B181BFC</key>
 		<string>../../../../..</string>
 		<key>9DF1701D3851986ABCECC675606B11CDFF753B30</key>
-		<string>../../../../../../../Tealium/ios-library</string>
+		<string>../../../../../../Tealium/ios-library</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
 	<string>https://github.com/jalakoo/tagbridge.git</string>

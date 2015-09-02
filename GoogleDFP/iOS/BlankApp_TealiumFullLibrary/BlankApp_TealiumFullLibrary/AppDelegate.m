@@ -20,20 +20,28 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     
+#define USE_MOBILE_OVERRIDE 0
+    
+#if USE_MOBILE_OVERRIDE == 0
+    // Standard init
     [Tealium initSharedInstance:@"tealiummobile"
                         profile:@"demo"
                          target:@"dev"
-                        options:TLDisplayVerboseLogs
+                        options:TLSuppressLogs
                globalCustomData:nil];
     
-    // Mobile.html override - comment above and uncomment below
+# else
+    // Init with Mobile.html override
     [Tealium initSharedInstance:@"tealiummobile"
                         profile:@"demo"
                          target:@"dev"
                         options:TLDisplayVerboseLogs
                globalCustomData:@{TealiumDSK_OverrideUrl:@"https://www.someaddress.com"}];
     
+#endif
+    
     [[TEALGoogleDFPRemoteCommands sharedInstance] enable];
+    [[TEALGoogleDFPRemoteCommands sharedInstance] enableLogs:YES];
     
     return YES;
 }
