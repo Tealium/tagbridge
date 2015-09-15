@@ -65,7 +65,7 @@ Add the Google DFP Mobile Tag to the TIQ account-profile specified in the Tealiu
 
 Questions or comments?
 
-- Post code questions in the [issues page.](../../issues)
+- Post code questions in the [issues page.](https://github.com/Tealium/tagbridge/issues)
 - Contact your Tealium account manager
 
 
