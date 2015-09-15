@@ -22,12 +22,8 @@ public final class TealiumHelper {
             WebView.setWebContentsDebuggingEnabled(true);
         }
 
-        final GoogleDFPRemoteCommand dfp = new GoogleDFPRemoteCommand(application);
-
         Tealium.initialize(Tealium.Config.create(application, "tealiummobile", "demo", "dev")
-                .setLibraryLogLevel(Tealium.LogLevel.VERBOSE)
-                .setJavaScriptLogLevel(Tealium.LogLevel.VERBOSE)
-                .addRemoteCommand(dfp));
+                .addRemoteCommand(new GoogleDFPRemoteCommand(application)));
     }
 
     public static void onResume(Activity activity, Map<String, String> data) {
