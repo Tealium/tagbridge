@@ -79,6 +79,9 @@
     }
     
     [self log:[NSString stringWithFormat:@"%s", __FUNCTION__]];
+    
+    // NOTE: Update if wanting better view resizing logic
+    
     [self adViewDidReceiveAd:self.activeBanner];
 }
 
@@ -272,10 +275,8 @@
     
     if ([NSJSONSerialization isValidJSONObject:allAds]) {
         
-        NSError *error = [[NSError alloc] init];
-        
         @autoreleasepool {
-            NSData *jsonData = [NSJSONSerialization dataWithJSONObject:allAds options:0 error:&error];
+            NSData *jsonData = [NSJSONSerialization dataWithJSONObject:allAds options:0 error:nil];
             
             if (jsonData != nil) {
                 jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
