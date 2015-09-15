@@ -27,7 +27,7 @@
     [Tealium initSharedInstance:@"tealiummobile"
                         profile:@"demo"
                          target:@"dev"
-                        options:TLSuppressLogs
+                        options:TLDisplayVerboseLogs
                globalCustomData:nil];
     
 # else
