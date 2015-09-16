@@ -6,7 +6,6 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.View;
 
-import com.tealium.blankapp.R;
 import com.tealium.sampleapp.helper.TealiumHelper;
 
 public class MainActivity extends Activity {

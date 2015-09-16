@@ -7,7 +7,7 @@ import android.os.Build;
 import android.view.View;
 import android.webkit.WebView;
 
-import com.tealium.blankapp.BuildConfig;
+import com.tealium.sampleapp.BuildConfig;
 import com.tealium.googledfp.GoogleDFPRemoteCommand;
 import com.tealium.library.Tealium;
 
