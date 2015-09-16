@@ -3,6 +3,7 @@ package com.tealium.googledfp;
 import android.app.Activity;
 import android.app.Application;
 import android.location.Location;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -142,7 +143,7 @@ public final class GoogleDFPRemoteCommand extends RemoteCommand implements
                 return;
             }
 
-            this.removeBannerAd(adIdentifier, adView);
+            this.orphanBannerAd(adView);
             // Resets
             adView.setAdSizes(adView.getAdSizes());
             contentViewFrame.addView(adView);
@@ -265,19 +266,39 @@ public final class GoogleDFPRemoteCommand extends RemoteCommand implements
     }
 
     private boolean removeInterstitialAds(String adId, String adUnitId) {
-        final InterstitialAdIdentifier adIdentifier = new InterstitialAdIdentifier(adId, adUnitId);
-        return this.interstitialAds.remove(adIdentifier) != null;
+
+        boolean removed = false;
+
+        for (InterstitialAdIdentifier adIdentifier : this.interstitialAds.keySet()) {
+            if (TextUtils.equals(adId, adIdentifier.getAdId()) ||
+                    TextUtils.equals(adUnitId, adIdentifier.getAdUnitId())) {
+                removed = this.interstitialAds.remove(adIdentifier) != null || removed;
+            }
+        }
+
+        return removed;
     }
 
     private boolean removeBannerAds(String adId, String adUnitId) {
-        final BannerAdIdentifier adIdentifier = new BannerAdIdentifier(null, adUnitId, adId);
-        final PublisherAdView adView = this.bannerAds.remove(adIdentifier);
-        return this.removeBannerAd(adIdentifier, adView);
+
+        boolean removed = false;
+
+        for (BannerAdIdentifier adIdentifier : this.bannerAds.keySet()) {
+            if (TextUtils.equals(adId, adIdentifier.getAdId()) ||
+                    TextUtils.equals(adUnitId, adIdentifier.getAdUnitId())) {
+
+                final PublisherAdView adView = this.bannerAds.remove(adIdentifier);
+                removed = adView != null || removed;
+                this.orphanBannerAd(adView);
+            }
+        }
+
+        return removed;
     }
 
-    private boolean removeBannerAd(BannerAdIdentifier adIdentifier, PublisherAdView adView) {
+    private boolean orphanBannerAd(PublisherAdView adView) {
 
-        if (adView == null || adIdentifier == null) {
+        if (adView == null) {
             return false;
         }
 
@@ -289,16 +310,8 @@ public final class GoogleDFPRemoteCommand extends RemoteCommand implements
             // Reset margin.
             final FrameLayout.LayoutParams layoutParams =
                     (FrameLayout.LayoutParams) contentView.getLayoutParams();
-            switch (adIdentifier.getAnchor()) {
-                case BOTTOM:
-                    layoutParams.bottomMargin = 0;
-                    needsNewLayout = true;
-                    break;
-                case TOP:
-                    layoutParams.topMargin = 0;
-                    needsNewLayout = true;
-                    break;
-            }
+            layoutParams.bottomMargin = 0;
+            layoutParams.topMargin = 0;
 
             if (needsNewLayout) {
                 contentView.setLayoutParams(layoutParams);

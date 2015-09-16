@@ -1,9 +1,12 @@
-package com.tealium.googledfp;
+package com.tealium.googledfp.identifier;
+
+import com.google.android.gms.ads.AdListener;
+import com.tealium.googledfp.GoogleDFPRemoteCommand;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-final class InterstitialAdIdentifier extends AdIdentifier {
+public final class InterstitialAdIdentifier extends AdIdentifier {
 
     private CloseListener closeListener;
 
@@ -31,14 +34,19 @@ final class InterstitialAdIdentifier extends AdIdentifier {
         }
     }
 
-    static InterstitialAdIdentifier parseInterstitialAdIdentifier(JSONObject payload) throws JSONException {
+    @Override
+    public AdListener getAdListener() {
+        return super.getAdListener();
+    }
+
+    public static InterstitialAdIdentifier parseInterstitialAdIdentifier(JSONObject payload) throws JSONException {
         final String adUnitId = payload.getString(GoogleDFPRemoteCommand.KEY_AD_UNIT_ID);
         final String id = payload.optString(GoogleDFPRemoteCommand.KEY_AD_ID, null);
 
         return new InterstitialAdIdentifier(adUnitId, id);
     }
 
-    interface CloseListener {
+    public interface CloseListener {
         void onInterstitialAdClose(InterstitialAdIdentifier identifier);
     }
 }

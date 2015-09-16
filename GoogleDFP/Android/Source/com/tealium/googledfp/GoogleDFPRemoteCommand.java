@@ -3,8 +3,8 @@ package com.tealium.googledfp;
 import android.app.Activity;
 import android.app.Application;
 import android.location.Location;
+import android.text.TextUtils;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 
 import com.google.android.gms.ads.AdRequest;
@@ -12,6 +12,8 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.doubleclick.PublisherAdRequest;
 import com.google.android.gms.ads.doubleclick.PublisherAdView;
 import com.google.android.gms.ads.doubleclick.PublisherInterstitialAd;
+import com.tealium.googledfp.identifier.BannerAdIdentifier;
+import com.tealium.googledfp.identifier.InterstitialAdIdentifier;
 import com.tealium.library.RemoteCommand;
 
 import org.json.JSONArray;
@@ -26,7 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 /**
  * The TagBridge module for Google Play Service's Ads.
@@ -45,9 +46,9 @@ import java.util.WeakHashMap;
 public final class GoogleDFPRemoteCommand extends RemoteCommand implements
         ActivityLifecycleCallbacks.VisiblityListener, InterstitialAdIdentifier.CloseListener {
 
-    static final String KEY_AD_UNIT_ID = "ad_unit_id";
-    static final String KEY_BANNER_ANCHOR = "banner_anchor";
-    static final String KEY_AD_ID = "ad_id";
+    public static final String KEY_AD_UNIT_ID = "ad_unit_id";
+    public static final String KEY_AD_ID = "ad_id";
+    public static final String KEY_BANNER_ANCHOR = "banner_anchor";
     static final String KEY_BANNER_AD_SIZES = "banner_ad_sizes";
     static final String KEY_CUSTOM_TARGETING = "custom_targeting";
     static final String KEY_KEYWORDS = "keywords";
@@ -73,14 +74,14 @@ public final class GoogleDFPRemoteCommand extends RemoteCommand implements
     private static final int STATUS_AD_NOT_FOUND = 421;
     private static final int STATUS_AD_NOT_READY = 422;
 
-    private final Map<PublisherAdView, BannerAdIdentifier> bannerAds;
-    private final Map<PublisherInterstitialAd, InterstitialAdIdentifier> interstitialAds;
+    private final Map<BannerAdIdentifier, PublisherAdView> bannerAds;
+    private final Map<InterstitialAdIdentifier, PublisherInterstitialAd> interstitialAds;
     private WeakReference<Activity> currentActivity;
 
     public GoogleDFPRemoteCommand(Application application) {
         super("google_dfp", "Google DFP");
 
-        this.bannerAds = new WeakHashMap<>();
+        this.bannerAds = new HashMap<>();
         this.interstitialAds = new HashMap<>();
 
         ActivityLifecycleCallbacks.register(application, this);
@@ -116,60 +117,51 @@ public final class GoogleDFPRemoteCommand extends RemoteCommand implements
 
     @Override
     public void onActivityPause(Activity activity) {
+
         this.currentActivity = null;
     }
 
     @Override
     public void onInterstitialAdClose(InterstitialAdIdentifier identifier) {
-
-        if (identifier.getAdId() == null) {
-            final List<PublisherInterstitialAd> ads = this.getInterstitialAds(identifier.getAdUnitId());
-            for (PublisherInterstitialAd ad : ads) {
-                this.interstitialAds.remove(ad);
-            }
-        } else {
-            final PublisherInterstitialAd ad = this.getInterstitialAd(identifier.getAdId());
-            if (ad == null) {
-                return;
-            }
-            this.interstitialAds.remove(ad);
-        }
-
         identifier.setCloseListener(null);
+        this.interstitialAds.remove(identifier);
     }
 
     private void createBannerAd(Response response) throws JSONException {
 
-        final FrameLayout contentView = this.getCurrentContentView(response);
-        if (contentView == null) {
+        final FrameLayout contentViewFrame = this.getCurrentContentView(response);
+        if (contentViewFrame == null) {
             return;
         }
 
         final BannerAdIdentifier adIdentifier = BannerAdIdentifier.parseBannerAdIdentifier(
                 response.getRequestPayload());
 
-        if (adIdentifier.getAdId() != null) {
-            // Non-null ad_ids must be unique
-            for (BannerAdIdentifier identifier : this.bannerAds.values()) {
-                if (adIdentifier.getAdId().equals(identifier.getAdId())) {
-                    throw new IllegalArgumentException("An ad with ad_id=" + adIdentifier.getAdId() + " already exists.");
-                }
+        PublisherAdView adView = this.bannerAds.get(adIdentifier);
+        if (adView != null) {
+            if (contentViewFrame == adView.getParent()) {
+                return;
             }
+
+            this.orphanBannerAd(adView);
+            // Resets
+            adView.setAdSizes(adView.getAdSizes());
+            contentViewFrame.addView(adView);
+            BannerAdUtils.resizeContentView(adIdentifier, adView);
+            return;
         }
 
-        final PublisherAdView adView = new PublisherAdView(contentView.getContext());
+        adView = new PublisherAdView(contentViewFrame.getContext().getApplicationContext());
         final PublisherAdRequest adRequest = parsePublisherAdRequest(response.getRequestPayload());
 
         adView.setAdSizes(parseBannerAdSizes(response.getRequestPayload()));
         adView.setAdUnitId(adIdentifier.getAdUnitId());
         adView.setLayoutParams(adIdentifier.getAnchor().createFrameLayoutLayoutParams());
-        adView.getViewTreeObserver().addOnGlobalLayoutListener(createBannerGlobalLayoutListener(
-                adView, adIdentifier));
-        adView.setAdListener(adIdentifier.getAdListener());
+        adView.setAdListener(adIdentifier.getAdListener(adView));
         adView.loadAd(adRequest);
+        this.bannerAds.put(adIdentifier, adView);
 
-        contentView.addView(adView);
-        this.bannerAds.put(adView, adIdentifier);
+        contentViewFrame.addView(adView);
     }
 
     private void createInterstitialAd(Response response) throws JSONException {
@@ -184,48 +176,34 @@ public final class GoogleDFPRemoteCommand extends RemoteCommand implements
         final InterstitialAdIdentifier adIdentifier = InterstitialAdIdentifier.parseInterstitialAdIdentifier(
                 response.getRequestPayload());
 
-        if (adIdentifier.getAdId() != null) {
-            // Non-null ad_ids must be unique
-            for (InterstitialAdIdentifier identifier : this.interstitialAds.values()) {
-                if (adIdentifier.getAdId().equals(identifier.getAdId())) {
-                    throw new IllegalArgumentException("An ad with ad_id=" + adIdentifier.getAdId() + " already exists.");
-                }
-            }
+        if (this.interstitialAds.containsKey(adIdentifier)) {
+            throw new IllegalArgumentException("An ad with ad_id=" + adIdentifier.getAdId() + " already exists.");
         }
 
         adIdentifier.setCloseListener(this);
-        final PublisherInterstitialAd ad = new PublisherInterstitialAd(activity);
+        final PublisherInterstitialAd ad = new PublisherInterstitialAd(activity.getApplicationContext());
         final PublisherAdRequest adRequest = parsePublisherAdRequest(response.getRequestPayload());
 
         ad.setAdUnitId(adIdentifier.getAdUnitId());
         ad.setAdListener(adIdentifier.getAdListener());
         ad.loadAd(adRequest);
 
-        this.interstitialAds.put(ad, adIdentifier);
+        this.interstitialAds.put(adIdentifier, ad);
     }
 
     private void showInterstitialAd(Response response) throws JSONException {
-        final String adId = response.getRequestPayload().optString(KEY_AD_ID, null);
-        final String adUnitId = response.getRequestPayload().optString(KEY_AD_UNIT_ID, null);
+        final InterstitialAdIdentifier adIdentifier = InterstitialAdIdentifier
+                .parseInterstitialAdIdentifier(response.getRequestPayload());
 
-        PublisherInterstitialAd interstitialAd = null;
-
-        if (adId == null) {
-            final List<PublisherInterstitialAd> ads = this.getInterstitialAds(adUnitId);
-            if (ads.size() > 0) {
-                interstitialAd = ads.get(0);
-            }
-        } else {
-            interstitialAd = this.getInterstitialAd(adId);
-        }
+        final PublisherInterstitialAd interstitialAd = this.interstitialAds.get(adIdentifier);
 
         if (interstitialAd == null) {
             response.setStatus(STATUS_AD_NOT_FOUND);
             response.setBody(String.format(
                     Locale.ROOT,
                     "Ad { ad_id=%s, ad_unit_id=%s } not found.",
-                    adId,
-                    adUnitId));
+                    adIdentifier.getAdId(),
+                    adIdentifier.getAdUnitId()));
             return;
         }
 
@@ -238,8 +216,8 @@ public final class GoogleDFPRemoteCommand extends RemoteCommand implements
         response.setBody(String.format(
                 Locale.ROOT,
                 "Ad { ad_id=%s, ad_unit_id=%s } not ready to show.",
-                adId,
-                adUnitId));
+                adIdentifier.getAdId(),
+                adIdentifier.getAdUnitId()));
     }
 
     private void getAds(Response response) throws JSONException {
@@ -247,16 +225,19 @@ public final class GoogleDFPRemoteCommand extends RemoteCommand implements
         final JSONArray ads = new JSONArray();
         final Activity visibleActivity = this.getCurrentActivity();
 
-        for (Map.Entry<PublisherAdView, BannerAdIdentifier> entry : this.bannerAds.entrySet()) {
+        for (Map.Entry<BannerAdIdentifier, PublisherAdView> entry : this.bannerAds.entrySet()) {
+            final BannerAdIdentifier adIdentifier = entry.getKey();
+            final PublisherAdView adView = entry.getValue();
+            final View parentView = (View) adView.getParent();
 
-            final boolean hasParent = entry.getKey().getParent() != null;
-            final boolean belongsToCurrentActivity = entry.getKey().getContext().equals(visibleActivity);
+            final boolean hasParent = parentView != null;
+            final boolean belongsToCurrentActivity = parentView.getContext().equals(visibleActivity);
 
-            ads.put(entry.getValue().toJSONObject()
+            ads.put(adIdentifier.toJSONObject()
                     .put("is_visible", hasParent && belongsToCurrentActivity));
         }
 
-        for (AdIdentifier adIdentifier : this.interstitialAds.values()) {
+        for (InterstitialAdIdentifier adIdentifier : this.interstitialAds.keySet()) {
             ads.put(adIdentifier.toJSONObject());
         }
 
@@ -285,63 +266,58 @@ public final class GoogleDFPRemoteCommand extends RemoteCommand implements
     }
 
     private boolean removeInterstitialAds(String adId, String adUnitId) {
-        if (adId == null) {
-            final List<PublisherInterstitialAd> ads = this.getInterstitialAds(adUnitId);
-            if (ads.size() == 0) {
-                return false;
+
+        boolean removed = false;
+
+        for (InterstitialAdIdentifier adIdentifier : this.interstitialAds.keySet()) {
+            if (TextUtils.equals(adId, adIdentifier.getAdId()) ||
+                    TextUtils.equals(adUnitId, adIdentifier.getAdUnitId())) {
+                removed = this.interstitialAds.remove(adIdentifier) != null || removed;
             }
-            for (PublisherInterstitialAd ad : ads) {
-                this.interstitialAds.remove(ad);
-            }
-            return true;
         }
 
-        final PublisherInterstitialAd ad = this.getInterstitialAd(adId);
-
-        if (ad == null) {
-            return false;
-        } else {
-            this.interstitialAds.remove(ad);
-            return true;
-        }
+        return removed;
     }
 
     private boolean removeBannerAds(String adId, String adUnitId) {
-        if (adId == null) {
-            final List<PublisherAdView> ads = this.getBannerAds(adUnitId);
-            boolean success = false;
-            for (PublisherAdView ad : ads) {
-                success = this.removeBannerAd(ad) || success;
+
+        boolean removed = false;
+
+        for (BannerAdIdentifier adIdentifier : this.bannerAds.keySet()) {
+            if (TextUtils.equals(adId, adIdentifier.getAdId()) ||
+                    TextUtils.equals(adUnitId, adIdentifier.getAdUnitId())) {
+
+                final PublisherAdView adView = this.bannerAds.remove(adIdentifier);
+                removed = adView != null || removed;
+                this.orphanBannerAd(adView);
             }
-            return success;
         }
 
-        return this.removeBannerAd(this.getBannerAd(adId));
+        return removed;
     }
 
-    private boolean removeBannerAd(PublisherAdView adView) {
+    private boolean orphanBannerAd(PublisherAdView adView) {
+
         if (adView == null) {
             return false;
         }
 
-        final View contentView = getContentView(adView);
+        final View contentView = BannerAdUtils.getContentView(adView);
         if (contentView != null) {
-            final BannerAdIdentifier adIdentifier = this.bannerAds.get(adView);
+
+            boolean needsNewLayout = false;
 
             // Reset margin.
-            final FrameLayout.LayoutParams fllp =
+            final FrameLayout.LayoutParams layoutParams =
                     (FrameLayout.LayoutParams) contentView.getLayoutParams();
-            switch (adIdentifier.getAnchor()) {
-                case BOTTOM:
-                    fllp.bottomMargin = 0;
-                    break;
-                case TOP:
-                    fllp.topMargin = 0;
-                    break;
+            layoutParams.bottomMargin = 0;
+            layoutParams.topMargin = 0;
+
+            if (needsNewLayout) {
+                contentView.setLayoutParams(layoutParams);
             }
         }
 
-        this.bannerAds.remove(adView);
 
         final FrameLayout contentViewFrame = (FrameLayout) adView.getParent();
         if (contentViewFrame == null) {
@@ -373,64 +349,6 @@ public final class GoogleDFPRemoteCommand extends RemoteCommand implements
 
     private Activity getCurrentActivity() {
         return this.currentActivity == null ? null : this.currentActivity.get();
-    }
-
-    private PublisherAdView getBannerAd(String adId) {
-
-        if (adId == null) {
-            return null;
-        }
-
-        // find ad
-        for (Map.Entry<PublisherAdView, BannerAdIdentifier> entry : this.bannerAds.entrySet()) {
-            if (adId.equals(entry.getValue().getAdId())) {
-                return entry.getKey();
-            }
-        }
-
-        return null;
-    }
-
-    private List<PublisherAdView> getBannerAds(String adUnitId) {
-        final ArrayList<PublisherAdView> bannerAds = new ArrayList<>(this.bannerAds.size());
-
-        for (Map.Entry<PublisherAdView, BannerAdIdentifier> entry : this.bannerAds.entrySet()) {
-            if (entry.getValue().getAdUnitId().equals(adUnitId)) {
-                bannerAds.add(entry.getKey());
-            }
-        }
-
-        return bannerAds;
-    }
-
-    private PublisherInterstitialAd getInterstitialAd(String adId) {
-
-        if (adId == null) {
-            return null;
-        }
-
-        // find ad
-        for (Map.Entry<PublisherInterstitialAd, InterstitialAdIdentifier> entry : this.interstitialAds.entrySet()) {
-            if (adId.equals(entry.getValue().getAdId())) {
-                return entry.getKey();
-            }
-        }
-
-        return null;
-    }
-
-    private List<PublisherInterstitialAd> getInterstitialAds(String adUnitId) {
-
-        final ArrayList<PublisherInterstitialAd> ads = new ArrayList<>(this.interstitialAds.size());
-
-        // find ad
-        for (Map.Entry<PublisherInterstitialAd, InterstitialAdIdentifier> entry : this.interstitialAds.entrySet()) {
-            if (adUnitId.equals(entry.getValue().getAdUnitId())) {
-                ads.add(entry.getKey());
-            }
-        }
-
-        return ads;
     }
 
     private static AdSize[] parseBannerAdSizes(JSONObject payload) {
@@ -579,70 +497,5 @@ public final class GoogleDFPRemoteCommand extends RemoteCommand implements
                 builder.addTestDevice(testDevice);
             }
         }
-    }
-
-    private static ViewTreeObserver.OnGlobalLayoutListener createBannerGlobalLayoutListener(
-            final PublisherAdView adView, final BannerAdIdentifier adIdentifier) {
-
-        return new ViewTreeObserver.OnGlobalLayoutListener() {
-
-            @Override
-            public void onGlobalLayout() {
-                this.resizeSibling();
-            }
-
-            private void resizeSibling() {
-                final int height = adView.getHeight();
-                View contentView;
-
-                if (height <= 0 || (contentView = getContentView(adView)) == null) {
-                    // Need a height and a child to modify.
-                    return;
-                }
-
-                FrameLayout.LayoutParams contentViewLP = ((FrameLayout.LayoutParams) contentView.getLayoutParams());
-
-                boolean needsNewLayout = false;
-
-                switch (adIdentifier.getAnchor()) {
-                    case TOP:
-                        if (contentViewLP.topMargin != height) {
-                            contentViewLP.topMargin = height;
-                            needsNewLayout = true;
-                        }
-                        break;
-                    case BOTTOM:
-                        if (contentViewLP.bottomMargin != height) {
-                            contentViewLP.bottomMargin = height;
-                            needsNewLayout = true;
-                        }
-                        break;
-                }
-
-                if (needsNewLayout) {
-                    // Resetting will inform the parent that new margins need to be drawn.
-                    contentView.setLayoutParams(contentViewLP);
-                }
-            }
-        };
-    }
-
-    private static View getContentView(PublisherAdView adView) {
-        FrameLayout contentViewParent = (FrameLayout) adView.getParent();
-        if (contentViewParent == null) {
-            return null;
-        }
-
-        for (int i = 0; i < contentViewParent.getChildCount(); i++) {
-            View child = contentViewParent.getChildAt(i);
-            if (child.getTag() instanceof AdIdentifier) {
-                // it's an ad
-                continue;
-            }
-
-            return child;
-        }
-
-        return null;
     }
 }

@@ -1,20 +1,17 @@
-package com.tealium.googledfp;
+package com.tealium.googledfp.identifier;
 
 import com.google.android.gms.ads.AdListener;
+import com.tealium.googledfp.GoogleDFPRemoteCommand;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 abstract class AdIdentifier {
 
-    private enum Status {
-        CREATED, CLOSED, FAILED_TO_LOAD, LEFT_APPLICATION, OPENED, LOADED;
-    }
-
     private final String adUnitId;
     private final String adId;
     private final AdListener adListener;
-    private Status status;
+    private AdStatus status;
 
     public AdIdentifier(String adUnitId, String adId) {
         if ((this.adUnitId = adUnitId) == null) {
@@ -22,7 +19,7 @@ abstract class AdIdentifier {
         }
         this.adId = adId;
         this.adListener = createAdListener();
-        this.status = Status.CREATED;
+        this.status = AdStatus.CREATED;
     }
 
     public final String getAdUnitId() {
@@ -33,7 +30,7 @@ abstract class AdIdentifier {
         return adId;
     }
 
-    public final AdListener getAdListener() {
+    protected AdListener getAdListener() {
         return adListener;
     }
 
@@ -53,37 +50,53 @@ abstract class AdIdentifier {
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AdIdentifier that = (AdIdentifier) o;
+
+        if (!adUnitId.equals(that.adUnitId)) return false;
+        if (adId != null ? !adId.equals(that.adId) : that.adId != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = adUnitId.hashCode();
+        result = 31 * result + (adId != null ? adId.hashCode() : 0);
+        return result;
+    }
+
     private AdListener createAdListener() {
         return new AdListener() {
+
             @Override
             public void onAdClosed() {
-                super.onAdClosed();
-                status = Status.CLOSED;
+                status = AdStatus.CLOSED;
                 adClosed();
             }
 
             @Override
             public void onAdFailedToLoad(int errorCode) {
-                super.onAdFailedToLoad(errorCode);
-                status = Status.FAILED_TO_LOAD;
+                status = AdStatus.FAILED_TO_LOAD;
             }
 
             @Override
             public void onAdLeftApplication() {
-                super.onAdLeftApplication();
-                status = Status.LEFT_APPLICATION;
+                status = AdStatus.LEFT_APPLICATION;
             }
 
             @Override
             public void onAdOpened() {
-                super.onAdOpened();
-                status = Status.OPENED;
+                status = AdStatus.OPENED;
             }
 
             @Override
             public void onAdLoaded() {
-                super.onAdLoaded();
-                status = Status.LOADED;
+                status = AdStatus.LOADED;
             }
         };
     }
