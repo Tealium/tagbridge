@@ -22,7 +22,7 @@ public final class TealiumHelper {
             WebView.setWebContentsDebuggingEnabled(true);
         }
 
-        Tealium.initialize(Tealium.Config.create(application, "tealiummobile", "android", "dev")
+        Tealium.initialize(Tealium.Config.create(application, "tealiummobile", "demo", "dev")
                 .addRemoteCommand(new GoogleDFPRemoteCommand(application))
                 .setLibraryLogLevel(Tealium.LogLevel.VERBOSE)
                 .setJavaScriptLogLevel(Tealium.LogLevel.VERBOSE));

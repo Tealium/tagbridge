@@ -1,19 +1,19 @@
-package com.tealium.googledfp.identifier;
+package com.tealium.googledfp;
 
 import com.google.android.gms.ads.AdListener;
-import com.tealium.googledfp.GoogleDFPRemoteCommand;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-abstract class AdIdentifier {
+final class InterstitialAdIdentifier {
 
     private final String adUnitId;
     private final String adId;
     private final AdListener adListener;
+    private CloseListener closeListener;
     private AdStatus status;
 
-    public AdIdentifier(String adUnitId, String adId) {
+    public InterstitialAdIdentifier(String adUnitId, String adId) {
         if ((this.adUnitId = adUnitId) == null) {
             throw new IllegalArgumentException();
         }
@@ -30,15 +30,12 @@ abstract class AdIdentifier {
         return adId;
     }
 
-    protected AdListener getAdListener() {
-        return adListener;
-    }
-
     public JSONObject toJSONObject() {
         try {
             final JSONObject obj = new JSONObject()
                     .put(GoogleDFPRemoteCommand.KEY_AD_UNIT_ID, this.adUnitId)
-                    .put("status", this.status);
+                    .put("status", this.status)
+                    .put("type", "INTERSTITIAL");
 
             if (this.adId != null) {
                 obj.put(GoogleDFPRemoteCommand.KEY_AD_ID, this.adId);
@@ -55,7 +52,7 @@ abstract class AdIdentifier {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        AdIdentifier that = (AdIdentifier) o;
+        InterstitialAdIdentifier that = (InterstitialAdIdentifier) o;
 
         if (!adUnitId.equals(that.adUnitId)) return false;
         if (adId != null ? !adId.equals(that.adId) : that.adId != null) return false;
@@ -101,7 +98,28 @@ abstract class AdIdentifier {
         };
     }
 
-    protected void adClosed() {
+    public void setCloseListener(CloseListener closeListener) {
+        this.closeListener = closeListener;
+    }
 
+    private void adClosed() {
+        if (closeListener != null) {
+            closeListener.onInterstitialAdClose(this);
+        }
+    }
+
+    public AdListener getAdListener() {
+        return this.adListener;
+    }
+
+    public static InterstitialAdIdentifier parseInterstitialAdIdentifier(JSONObject payload) throws JSONException {
+        final String adUnitId = payload.getString(GoogleDFPRemoteCommand.KEY_AD_UNIT_ID);
+        final String id = payload.optString(GoogleDFPRemoteCommand.KEY_AD_ID, null);
+
+        return new InterstitialAdIdentifier(adUnitId, id);
+    }
+
+    public interface CloseListener {
+        void onInterstitialAdClose(InterstitialAdIdentifier identifier);
     }
 }

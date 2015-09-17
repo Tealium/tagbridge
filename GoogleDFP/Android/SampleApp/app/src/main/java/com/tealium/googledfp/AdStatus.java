@@ -1,5 +1,5 @@
-package com.tealium.googledfp.identifier;
+package com.tealium.googledfp;
 
-public enum AdStatus {
+enum AdStatus {
     CREATED, CLOSED, FAILED_TO_LOAD, LEFT_APPLICATION, OPENED, LOADED;
 }
