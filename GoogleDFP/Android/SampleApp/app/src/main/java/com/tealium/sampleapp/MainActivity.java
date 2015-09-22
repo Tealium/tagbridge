@@ -1,4 +1,4 @@
-package com.tealium.blankapp;
+package com.tealium.sampleapp;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -6,7 +6,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.View;
 
-import com.tealium.blankapp.helper.TealiumHelper;
+import com.tealium.sampleapp.helper.TealiumHelper;
 
 public class MainActivity extends Activity {
 

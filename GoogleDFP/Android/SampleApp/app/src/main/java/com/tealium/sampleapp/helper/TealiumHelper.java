@@ -1,4 +1,4 @@
-package com.tealium.blankapp.helper;
+package com.tealium.sampleapp.helper;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -7,9 +7,9 @@ import android.os.Build;
 import android.view.View;
 import android.webkit.WebView;
 
-import com.tealium.blankapp.BuildConfig;
 import com.tealium.googledfp.GoogleDFPRemoteCommand;
 import com.tealium.library.Tealium;
+import com.tealium.sampleapp.BuildConfig;
 
 import java.util.Map;
 
@@ -23,7 +23,9 @@ public final class TealiumHelper {
         }
 
         Tealium.initialize(Tealium.Config.create(application, "tealiummobile", "demo", "dev")
-                .addRemoteCommand(new GoogleDFPRemoteCommand(application)));
+                .addRemoteCommand(new GoogleDFPRemoteCommand(application))
+                .setLibraryLogLevel(Tealium.LogLevel.VERBOSE)
+                .setJavaScriptLogLevel(Tealium.LogLevel.VERBOSE));
     }
 
     public static void onResume(Activity activity, Map<String, String> data) {
